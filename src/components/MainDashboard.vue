@@ -1,32 +1,13 @@
 <template>
   <div class="page-pad max-w-5xl mx-auto space-y-6 pb-24">
 
-    <!-- Greeting + compact plan widget -->
-    <div class="flex items-start justify-between gap-4">
-      <div>
-        <p class="text-brand-muted text-sm">{{ greeting }},</p>
-        <h2 class="text-xl font-extrabold text-secondary leading-tight">
-          {{ userStore.name.split(' ')[0] }}
-        </h2>
-        <p class="text-xs text-brand-muted mt-0.5">What are you looking for today?</p>
-      </div>
-
-      <router-link
-        to="/subscriptions"
-        class="flex items-center gap-2.5 navy-gradient rounded-lg px-3 py-2 shadow-card hover:shadow-card-hover transition-shadow flex-shrink-0"
-      >
-        <div class="w-8 h-8 bg-white/10 rounded-md flex items-center justify-center flex-shrink-0">
-          <Crown :size="15" class="text-white" />
-        </div>
-        <div class="leading-tight">
-          <div class="text-white/55 text-[9px] font-semibold uppercase tracking-wider">Current Plan</div>
-          <div class="text-white text-sm font-extrabold">{{ subStore.plan.name }}</div>
-          <div class="text-white/50 text-[10px]">{{ myCount }} of {{ subStore.listingLimit }} listings</div>
-        </div>
-        <span class="hidden sm:inline text-white/70 text-[11px] font-semibold bg-white/10 px-2.5 py-1 rounded-full ml-1">
-          {{ subStore.isPaid ? 'Manage' : 'Upgrade' }}
-        </span>
-      </router-link>
+    <!-- Greeting -->
+    <div>
+      <p class="text-brand-muted text-sm">{{ greeting }},</p>
+      <h2 class="text-xl font-extrabold text-secondary leading-tight">
+        {{ userStore.name.split(' ')[0] }}
+      </h2>
+      <p class="text-xs text-brand-muted mt-0.5">What are you looking for today?</p>
     </div>
 
     <!-- Featured Listings -->
@@ -90,17 +71,13 @@
 <script setup>
 import { computed } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { useSubscriptionStore } from '@/stores/subscription'
 import { usePropertyStore } from '@/stores/property'
 import { popularLocations } from '@/data/nigerianLocations'
 import PropertyCard from '@/components/PropertyCard.vue'
-import { ChevronRight, Plus, Crown } from 'lucide-vue-next'
+import { ChevronRight, Plus } from 'lucide-vue-next'
 
 const userStore    = useUserStore()
-const subStore     = useSubscriptionStore()
 const propStore    = usePropertyStore()
-
-const myCount      = computed(() => propStore.myListings.length)
 
 const hour     = new Date().getHours()
 const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
