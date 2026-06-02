@@ -22,11 +22,11 @@
         </div>
         <router-link
           v-for="item in group.items"
-          :key="item.path"
-          :to="item.path"
+          :key="item.label"
+          :to="item.type ? { path: '/properties', query: { type: item.type } } : item.path"
           @click="$emit('close')"
           class="nav-link"
-          :class="isActive(item.path) ? 'nav-link-active' : 'nav-link-inactive'"
+          :class="isItemActive(item) ? 'nav-link-active' : 'nav-link-inactive'"
         >
           <component :is="item.icon" :size="17" class="flex-shrink-0" />
           <span class="flex-1 truncate">{{ item.label }}</span>
@@ -94,6 +94,7 @@ import { mockNotifications } from '@/data/mockData'
 import {
   LayoutDashboard, Building2, MessageSquare, User, ClipboardList,
   LogOut, Home, Bell, Plus, Star, Crown, ChevronRight, BarChart2,
+  Tag, Key, FileText, Moon, Landmark, HardHat,
 } from 'lucide-vue-next'
 
 defineProps({ open: Boolean })
@@ -116,6 +117,19 @@ const navGroups = computed(() => [
     items: [
       { path: '/dashboard',   label: 'Home',       icon: LayoutDashboard },
       { path: '/properties',  label: 'Properties', icon: Building2 },
+    ],
+  },
+  {
+    label: 'Browse',
+    items: [
+      { label: 'Buy',        icon: Home,      type: 'Buy' },
+      { label: 'Sell',       icon: Tag,       type: 'Sell' },
+      { label: 'Rent',       icon: Key,       type: 'Rent' },
+      { label: 'Lease',      icon: FileText,  type: 'Lease' },
+      { label: 'Shortlet',   icon: Moon,      type: 'Shortlet' },
+      { label: 'Commercial', icon: Building2, type: 'Commercial' },
+      { label: 'Land',       icon: Landmark,  type: 'Land' },
+      { label: 'New Dev',    icon: HardHat,   type: 'New Dev' },
     ],
   },
   {
@@ -145,6 +159,11 @@ const navGroups = computed(() => [
 
 const isActive = (path) =>
   route.path === path || (path.length > 1 && route.path.startsWith(path) && path !== '/dashboard')
+
+const isItemActive = (item) =>
+  item.type
+    ? route.path === '/properties' && route.query.type === item.type
+    : isActive(item.path)
 
 const handleLogout = () => {
   userStore.logout()

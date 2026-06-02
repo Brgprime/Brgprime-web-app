@@ -1,59 +1,32 @@
 <template>
   <div class="page-pad max-w-5xl mx-auto space-y-6 pb-24">
 
-    <!-- Greeting -->
-    <div>
-      <p class="text-brand-muted text-sm">{{ greeting }},</p>
-      <h2 class="text-xl font-extrabold text-secondary leading-tight">
-        {{ userStore.name.split(' ')[0] }}
-      </h2>
-      <p class="text-xs text-brand-muted mt-0.5">What are you looking for today?</p>
-    </div>
-
-    <!-- Plan Banner -->
-    <router-link
-      to="/subscriptions"
-      class="block navy-gradient rounded-lg p-4 relative overflow-hidden group"
-    >
-      <div class="absolute -right-4 -top-4 w-32 h-32 bg-white/5 rounded-full"></div>
-      <div class="absolute right-8 bottom-0 w-16 h-16 bg-white/5 rounded-full"></div>
-      <div class="relative flex items-center justify-between">
-        <div>
-          <p class="text-white/60 text-xs font-medium uppercase tracking-wider mb-0.5">Current Plan</p>
-          <div class="flex items-baseline gap-2">
-            <span class="text-3xl font-extrabold text-white">{{ subStore.plan.name }}</span>
-          </div>
-          <p class="text-white/50 text-xs mt-1">
-            {{ myCount }} of {{ subStore.listingLimit }} listings used<template v-if="subStore.isPaid"> · {{ subStore.premiumRemaining }} premium · {{ subStore.boostsRemaining }} boosts left</template>
-          </p>
-        </div>
-        <div class="flex flex-col items-end gap-2">
-          <div class="w-12 h-12 bg-white/10 rounded-md flex items-center justify-center group-hover:bg-white/15 transition-colors">
-            <Crown :size="22" class="text-white" />
-          </div>
-          <span class="text-white/70 text-xs font-semibold bg-white/10 px-3 py-1 rounded-full group-hover:bg-white/15 transition-colors">
-            {{ subStore.isPaid ? 'Manage Plan' : 'Upgrade' }}
-          </span>
-        </div>
+    <!-- Greeting + compact plan widget -->
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <p class="text-brand-muted text-sm">{{ greeting }},</p>
+        <h2 class="text-xl font-extrabold text-secondary leading-tight">
+          {{ userStore.name.split(' ')[0] }}
+        </h2>
+        <p class="text-xs text-brand-muted mt-0.5">What are you looking for today?</p>
       </div>
-    </router-link>
 
-    <!-- Browse By Category -->
-    <div>
-      <h3 class="section-title">Browse By</h3>
-      <div class="grid grid-cols-4 gap-2">
-        <router-link
-          v-for="cat in categories"
-          :key="cat.label"
-          to="/properties"
-          class="flex flex-col items-center gap-2 bg-white rounded-md px-1 py-3.5 shadow-card hover:shadow-card-hover transition-shadow"
-        >
-          <div class="w-9 h-9 rounded-md flex items-center justify-center" :class="cat.bg">
-            <component :is="cat.icon" :size="18" :class="cat.color" />
-          </div>
-          <span class="text-[11px] font-semibold text-secondary text-center leading-tight">{{ cat.label }}</span>
-        </router-link>
-      </div>
+      <router-link
+        to="/subscriptions"
+        class="flex items-center gap-2.5 navy-gradient rounded-lg px-3 py-2 shadow-card hover:shadow-card-hover transition-shadow flex-shrink-0"
+      >
+        <div class="w-8 h-8 bg-white/10 rounded-md flex items-center justify-center flex-shrink-0">
+          <Crown :size="15" class="text-white" />
+        </div>
+        <div class="leading-tight">
+          <div class="text-white/55 text-[9px] font-semibold uppercase tracking-wider">Current Plan</div>
+          <div class="text-white text-sm font-extrabold">{{ subStore.plan.name }}</div>
+          <div class="text-white/50 text-[10px]">{{ myCount }} of {{ subStore.listingLimit }} listings</div>
+        </div>
+        <span class="hidden sm:inline text-white/70 text-[11px] font-semibold bg-white/10 px-2.5 py-1 rounded-full ml-1">
+          {{ subStore.isPaid ? 'Manage' : 'Upgrade' }}
+        </span>
+      </router-link>
     </div>
 
     <!-- Featured Listings -->
@@ -121,10 +94,7 @@ import { useSubscriptionStore } from '@/stores/subscription'
 import { usePropertyStore } from '@/stores/property'
 import { popularLocations } from '@/data/nigerianLocations'
 import PropertyCard from '@/components/PropertyCard.vue'
-import {
-  ChevronRight, Plus, Crown,
-  Home, Tag, Key, FileText, Moon, Building2, Landmark, HardHat,
-} from 'lucide-vue-next'
+import { ChevronRight, Plus, Crown } from 'lucide-vue-next'
 
 const userStore    = useUserStore()
 const subStore     = useSubscriptionStore()
@@ -136,17 +106,6 @@ const hour     = new Date().getHours()
 const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
 const featured = computed(() => propStore.featuredListings)
-
-const categories = [
-  { icon: Home,      label: 'Buy',        color: 'text-primary',          bg: 'bg-primary/10'   },
-  { icon: Tag,       label: 'Sell',       color: 'text-success',          bg: 'bg-success/10'   },
-  { icon: Key,       label: 'Rent',       color: 'text-warning',          bg: 'bg-warning/10'   },
-  { icon: FileText,  label: 'Lease',      color: 'text-secondary',        bg: 'bg-secondary/10' },
-  { icon: Moon,      label: 'Shortlet',   color: 'text-secondary-variant',bg: 'bg-secondary/10' },
-  { icon: Building2, label: 'Commercial', color: 'text-primary',          bg: 'bg-primary/10'   },
-  { icon: Landmark,  label: 'Land',       color: 'text-success',          bg: 'bg-success/10'   },
-  { icon: HardHat,   label: 'New Dev',    color: 'text-warning',          bg: 'bg-warning/10'   },
-]
 
 const stats = [
   { value: '12,400+', label: 'Active Listings'  },

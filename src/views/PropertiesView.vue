@@ -65,7 +65,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import AppLayout from '@/components/AppLayout.vue'
 import PropertyCard from '@/components/PropertyCard.vue'
 import FilterModal from '@/components/FilterModal.vue'
@@ -74,7 +75,13 @@ import { nigerianLocations } from '@/data/nigerianLocations'
 import { Search, SlidersHorizontal, LayoutGrid, List, SearchX } from 'lucide-vue-next'
 
 const propStore = usePropertyStore()
+const route = useRoute()
 const showFilter = ref(false)
 const viewMode = ref('grid')
-const tabs = ['All', 'Buy', 'Sell', 'Rent', 'Lease', 'Shortlet', 'Commercial', 'Land']
+const tabs = ['All', 'Buy', 'Sell', 'Rent', 'Lease', 'Shortlet', 'Commercial', 'Land', 'New Dev']
+
+// Apply a category passed from the sidebar (e.g. /properties?type=Rent)
+watch(() => route.query.type, (t) => {
+  if (t && tabs.includes(t)) propStore.selectedTab = t
+}, { immediate: true })
 </script>
