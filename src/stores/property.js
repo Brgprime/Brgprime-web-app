@@ -18,7 +18,7 @@ export const usePropertyStore = defineStore('property', {
   }),
   getters: {
     filteredListings: (state) => {
-      return state.listings.filter(p => {
+      const matched = state.listings.filter(p => {
         const q = state.searchQuery.toLowerCase()
         const matchSearch = !q || p.title.toLowerCase().includes(q) || p.address.toLowerCase().includes(q)
         const matchLocation = state.selectedLocation === 'All Locations' || p.address.includes(state.selectedLocation)
@@ -30,9 +30,12 @@ export const usePropertyStore = defineStore('property', {
         const matchVerified = !state.filterOptions.verifiedOnly || p.isVerified
         return matchSearch && matchLocation && matchTab && matchPrice && matchType && matchBeds && matchBaths && matchVerified
       })
+      // Premium listings surface at the top of results, boosted next.
+      return matched.sort((a, b) => visibilityRank(b) - visibilityRank(a))
     },
     featuredListings: (state) => state.listings.filter(p => p.isVerified).slice(0, 6),
     recentListings: (state) => state.listings.filter(p => p.isRecentlyPosted).slice(0, 4),
+    myListings: (state) => state.listings.filter(p => p.agentName === 'You'),
     getById: (state) => (id) => state.listings.find(p => p.id === id),
   },
   actions: {
@@ -43,6 +46,8 @@ export const usePropertyStore = defineStore('property', {
         createdAt: new Date().toISOString().split('T')[0],
         isRecentlyPosted: true,
         isVerified: false,
+        isPremium: !!listing.isPremium,
+        isBoosted: !!listing.isBoosted,
         agentName: 'You',
         agentAvatar: 'https://i.pravatar.cc/150?u=agent',
         rating: 0,
@@ -62,6 +67,10 @@ export const usePropertyStore = defineStore('property', {
     },
   },
 })
+
+function visibilityRank(p) {
+  return (p.isPremium ? 2 : 0) + (p.isBoosted ? 1 : 0)
+}
 
 function tabMatchesType(tab, type) {
   const map = {

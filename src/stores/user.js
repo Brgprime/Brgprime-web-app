@@ -5,7 +5,7 @@ export const useUserStore = defineStore('user', {
     name:            localStorage.getItem('user_name')   || 'Tunde Adeyemi',
     email:           localStorage.getItem('user_email')  || 'tunde@example.com',
     phone:           localStorage.getItem('user_phone')  || '08012345678',
-    bio:             localStorage.getItem('user_bio')    || 'Real estate enthusiast based in Lagos.',
+    bio:             localStorage.getItem('user_bio')    || 'Real estate enthusiast based in Nigeria.',
     profileImageUrl: localStorage.getItem('user_avatar') || 'https://i.pravatar.cc/150?u=brgprime',
     token:           localStorage.getItem('user_token')  || null,
     joinDate:        localStorage.getItem('user_joinDate') || new Date().toISOString(),

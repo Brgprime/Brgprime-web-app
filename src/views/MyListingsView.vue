@@ -37,9 +37,17 @@
             <div class="flex-1 p-4 min-w-0">
               <div class="flex items-start justify-between gap-2">
                 <div class="flex-1 min-w-0">
-                  <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1 inline-block"
-                    :class="statusClass(p.status)">
-                    {{ p.status || 'Active' }}
+                  <span class="inline-flex flex-wrap items-center gap-1 mb-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full inline-block"
+                      :class="statusClass(p.status)">
+                      {{ p.status || 'Active' }}
+                    </span>
+                    <span v-if="p.isPremium" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full inline-flex items-center gap-0.5 bg-warning/10 text-warning">
+                      <ArrowUpNarrowWide :size="10" /> Premium
+                    </span>
+                    <span v-if="p.isBoosted" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full inline-flex items-center gap-0.5 bg-success/10 text-success">
+                      <Rocket :size="10" /> Boosted
+                    </span>
                   </span>
                   <h3 class="font-bold text-secondary text-sm leading-tight truncate mt-1">{{ p.title }}</h3>
                   <p class="text-brand-muted text-xs mt-0.5 truncate">{{ p.address || p.location }}</p>
@@ -83,13 +91,13 @@
 import { ref, computed } from 'vue'
 import AppLayout from '@/components/AppLayout.vue'
 import { usePropertyStore } from '@/stores/property'
-import { Plus, Eye, Heart, ClipboardList } from 'lucide-vue-next'
+import { Plus, Eye, Heart, ClipboardList, ArrowUpNarrowWide, Rocket } from 'lucide-vue-next'
 
 const propStore  = usePropertyStore()
 const activeTab  = ref('All')
 const tabs       = ['All', 'Active', 'Pending', 'Sold']
 
-const listings   = computed(() => propStore.listings.slice(0, 6))
+const listings   = computed(() => propStore.myListings)
 const filtered   = computed(() =>
   activeTab.value === 'All' ? listings.value : listings.value.filter(p => (p.status || 'Active') === activeTab.value)
 )

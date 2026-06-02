@@ -47,20 +47,20 @@
         </div>
       </div>
 
-      <!-- Credits Card -->
-      <router-link to="/buy-posts" class="card p-5 flex items-center gap-4 hover:shadow-card-hover transition-shadow">
+      <!-- Plan Card -->
+      <router-link to="/subscriptions" class="card p-5 flex items-center gap-4 hover:shadow-card-hover transition-shadow">
         <div class="w-12 h-12 navy-gradient rounded-xl flex items-center justify-center flex-shrink-0">
-          <Layers :size="22" class="text-white" />
+          <Crown :size="22" class="text-white" />
         </div>
         <div class="flex-1 min-w-0">
-          <div class="font-bold text-secondary">Post Credits</div>
+          <div class="font-bold text-secondary">{{ subStore.plan.name }}</div>
           <div class="text-xs text-brand-muted mt-0.5">
-            <span class="font-semibold text-secondary text-base">{{ creditsStore.balance }}</span>
-            {{ creditsStore.balance === 1 ? 'credit' : 'credits' }} remaining
+            <span class="font-semibold text-secondary text-base">{{ myListingsCount }}</span>
+            of {{ subStore.listingLimit }} listings used
           </div>
         </div>
         <div class="flex items-center gap-2 flex-shrink-0">
-          <span class="text-xs font-semibold text-primary">Buy More</span>
+          <span class="text-xs font-semibold text-primary">{{ subStore.isPaid ? 'Manage' : 'Upgrade' }}</span>
           <ChevronRight :size="16" class="text-brand-light" />
         </div>
       </router-link>
@@ -83,10 +83,10 @@
       <!-- Subscription -->
       <div class="card overflow-hidden">
         <SectionHeader label="Subscription" />
-        <router-link to="/buy-posts" class="flex items-center gap-4 px-5 py-3.5 hover:bg-brand-bg">
+        <router-link to="/subscriptions" class="flex items-center gap-4 px-5 py-3.5 hover:bg-brand-bg">
           <Zap :size="18" class="text-brand-muted flex-shrink-0" />
           <span class="text-sm text-secondary flex-1">My Plan</span>
-          <span class="badge bg-brand-bg text-brand-muted border border-brand-border mr-1">Free</span>
+          <span class="badge mr-1" :class="subStore.isPaid ? 'bg-primary/10 text-primary' : 'bg-brand-bg text-brand-muted border border-brand-border'">{{ subStore.plan.name }}</span>
           <ChevronRight :size="16" class="text-brand-light" />
         </router-link>
       </div>
@@ -150,7 +150,7 @@
 import { computed, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { useCreditsStore } from '@/stores/credits'
+import { useSubscriptionStore } from '@/stores/subscription'
 import { useFavoritesStore } from '@/stores/favorites'
 import { usePropertyStore } from '@/stores/property'
 import { mockNotifications } from '@/data/mockData'
@@ -158,17 +158,17 @@ import AppLayout from '@/components/AppLayout.vue'
 import {
   BadgeCheck, Pencil, HelpCircle, MessageCircle, FileText, Info, ShieldCheck,
   ChevronRight, LogOut, Bell, Shield, CreditCard, Star, UserRound, Zap,
-  TrendingUp, Layers, BarChart2, MessageSquare, ClipboardList, Receipt, ShieldAlert,
+  TrendingUp, Layers, Crown, BarChart2, MessageSquare, ClipboardList, Receipt, ShieldAlert,
 } from 'lucide-vue-next'
 
 const router       = useRouter()
 const userStore    = useUserStore()
-const creditsStore = useCreditsStore()
+const subStore     = useSubscriptionStore()
 const favStore     = useFavoritesStore()
 const propStore    = usePropertyStore()
 
 const unread         = computed(() => mockNotifications.filter(n => !n.read).length)
-const myListingsCount = computed(() => propStore.listings.slice(0, 6).length)
+const myListingsCount = computed(() => propStore.myListings.length)
 const memberSince    = computed(() => {
   const d = new Date(userStore.joinDate || Date.now())
   return d.toLocaleDateString('en-NG', { month: 'short', year: 'numeric' })

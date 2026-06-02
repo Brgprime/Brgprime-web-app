@@ -101,9 +101,9 @@ const chartData = computed(() => allData[period.value])
 const maxVal = computed(() => Math.max(...chartData.value.map(d => d.value)))
 
 const listingPerf = [
-  { title: 'Modern Luxury Apartment, Lekki', views: 342, inquiries: 18, price: '₦2.5M/yr', status: 'Active', img: 'https://picsum.photos/100/80?random=1' },
-  { title: '4-Bedroom House, Victoria Island', views: 218, inquiries: 9, price: '₦85M', status: 'Active', img: 'https://picsum.photos/100/80?random=4' },
-  { title: 'Penthouse Suite, Ikoyi', views: 189, inquiries: 5, price: '₦250M', status: 'Active', img: 'https://picsum.photos/100/80?random=14' },
+  { title: 'Modern Luxury Apartment, Lekki', views: 342, inquiries: 18, price: '₦2.5M/yr', status: 'Active', img: '/properties/p01.jpeg' },
+  { title: '4-Bedroom House, Maitama', views: 218, inquiries: 9, price: '₦85M', status: 'Active', img: '/properties/p33.jpeg' },
+  { title: 'Penthouse Suite, Ikoyi', views: 189, inquiries: 5, price: '₦250M', status: 'Active', img: '/properties/p30.jpeg' },
 ]
 
 const leadSources = [

@@ -30,7 +30,7 @@
               <p class="text-xs text-gray-500 mb-0.5">{{ bundle?.name }}</p>
               <div class="flex items-baseline gap-2">
                 <span class="text-2xl font-extrabold text-gray-900">₦{{ formatPrice(bundle?.price) }}</span>
-                <span class="text-sm text-gray-400">· {{ bundle?.posts }} post credits</span>
+                <span v-if="descriptor" class="text-sm text-gray-400">· {{ descriptor }}</span>
               </div>
               <p class="text-xs text-gray-400 mt-1">brgprime.ng</p>
             </div>
@@ -119,8 +119,8 @@
                 <CheckCircle2 :size="36" class="text-green-500" />
               </div>
               <h3 class="text-lg font-extrabold text-gray-900 mb-1">Payment Successful!</h3>
-              <p class="text-gray-500 text-sm mb-1">{{ bundle?.posts }} post credits added to your account.</p>
-              <p class="text-gray-400 text-xs">You can now publish your listings.</p>
+              <p class="text-gray-500 text-sm mb-1">{{ bundle?.successText || `${bundle?.name} activated.` }}</p>
+              <p class="text-gray-400 text-xs">You're all set — enjoy your new plan.</p>
               <button
                 @click="$emit('success', bundle)"
                 class="mt-5 w-full py-3 rounded-lg text-white font-bold text-sm"
@@ -138,7 +138,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { X, Lock, Loader2, ShieldCheck, CheckCircle2 } from 'lucide-vue-next'
 
@@ -149,6 +149,12 @@ const props = defineProps({
 const emit = defineEmits(['close', 'success'])
 
 const userStore = useUserStore()
+
+// Short line shown beside the amount — supports both subscriptions and any
+// legacy "post credits" style bundle.
+const descriptor = computed(() =>
+  props.bundle?.descriptor || (props.bundle?.posts ? `${props.bundle.posts} post credits` : '')
+)
 
 const paying   = ref(false)
 const paid     = ref(false)

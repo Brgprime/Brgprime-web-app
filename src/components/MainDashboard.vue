@@ -22,30 +22,29 @@
       </router-link>
     </div>
 
-    <!-- Credits Banner -->
+    <!-- Plan Banner -->
     <router-link
-      to="/buy-posts"
+      to="/subscriptions"
       class="block navy-gradient rounded-lg p-4 relative overflow-hidden group"
     >
       <div class="absolute -right-4 -top-4 w-32 h-32 bg-white/5 rounded-full"></div>
       <div class="absolute right-8 bottom-0 w-16 h-16 bg-white/5 rounded-full"></div>
       <div class="relative flex items-center justify-between">
         <div>
-          <p class="text-white/60 text-xs font-medium uppercase tracking-wider mb-0.5">Post Credits</p>
+          <p class="text-white/60 text-xs font-medium uppercase tracking-wider mb-0.5">Current Plan</p>
           <div class="flex items-baseline gap-2">
-            <span class="text-3xl font-extrabold text-white">{{ creditsStore.balance }}</span>
-            <span class="text-white/50 text-sm">credits remaining</span>
+            <span class="text-3xl font-extrabold text-white">{{ subStore.plan.name }}</span>
           </div>
           <p class="text-white/50 text-xs mt-1">
-            {{ creditsStore.balance > 0 ? 'You can post ' + creditsStore.balance + ' more listing' + (creditsStore.balance > 1 ? 's' : '') : 'Buy credits to start listing' }}
+            {{ myCount }} of {{ subStore.listingLimit }} listings used<template v-if="subStore.isPaid"> · {{ subStore.premiumRemaining }} premium · {{ subStore.boostsRemaining }} boosts left</template>
           </p>
         </div>
         <div class="flex flex-col items-end gap-2">
           <div class="w-12 h-12 bg-white/10 rounded-md flex items-center justify-center group-hover:bg-white/15 transition-colors">
-            <Layers :size="22" class="text-white" />
+            <Crown :size="22" class="text-white" />
           </div>
           <span class="text-white/70 text-xs font-semibold bg-white/10 px-3 py-1 rounded-full group-hover:bg-white/15 transition-colors">
-            Buy More
+            {{ subStore.isPaid ? 'Manage Plan' : 'Upgrade' }}
           </span>
         </div>
       </div>
@@ -156,20 +155,22 @@
 <script setup>
 import { computed } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { useCreditsStore } from '@/stores/credits'
+import { useSubscriptionStore } from '@/stores/subscription'
 import { usePropertyStore } from '@/stores/property'
 import { popularLocations } from '@/data/nigerianLocations'
 import { mockNotifications } from '@/data/mockData'
 import PropertyCard from '@/components/PropertyCard.vue'
 import {
-  Bell, Search, ChevronRight, Plus, Layers,
+  Bell, Search, ChevronRight, Plus, Crown,
   Home, Tag, Key, FileText, Moon, Building2, Landmark, HardHat,
   BarChart2, MessageSquare, Star, ClipboardList,
 } from 'lucide-vue-next'
 
 const userStore    = useUserStore()
-const creditsStore = useCreditsStore()
+const subStore     = useSubscriptionStore()
 const propStore    = usePropertyStore()
+
+const myCount      = computed(() => propStore.myListings.length)
 
 const hour     = new Date().getHours()
 const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'

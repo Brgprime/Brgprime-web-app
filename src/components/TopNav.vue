@@ -70,7 +70,7 @@ const titleMap = {
   '/properties':      ['Properties',       'Browse all listings'],
   '/add-listing':     ['Post a Listing',   'Listings'],
   '/my-listings':     ['My Listings',      'Listings · Your Posts'],
-  '/buy-posts':       ['Buy Post Credits', 'Credits & Billing'],
+  '/buy-posts':       ['Subscription Plans', 'Plans & Pricing'],
   '/analytics':       ['Analytics',        'Insights & Performance'],
   '/forum':           ['Forum',            'Community · Group Chat'],
   '/subscriptions':   ['Subscriptions',    'Plans & Pricing'],

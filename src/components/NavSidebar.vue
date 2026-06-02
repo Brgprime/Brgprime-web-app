@@ -38,19 +38,19 @@
       </template>
     </nav>
 
-    <!-- Credits pill -->
+    <!-- Plan pill -->
     <div class="px-4 pb-2">
       <router-link
-        to="/buy-posts"
+        to="/subscriptions"
         @click="$emit('close')"
         class="flex items-center gap-2 bg-white/10 hover:bg-white/15 transition-colors rounded-md px-3 py-2.5"
       >
         <div class="w-7 h-7 bg-warning/20 rounded-md flex items-center justify-center flex-shrink-0">
-          <Layers :size="14" class="text-warning" />
+          <Crown :size="14" class="text-warning" />
         </div>
         <div class="flex-1 min-w-0">
-          <div class="text-white text-xs font-bold">Post Credits</div>
-          <div class="text-white/50 text-[10px]">{{ creditsStore.balance }} remaining</div>
+          <div class="text-white text-xs font-bold">{{ subStore.plan.name }}</div>
+          <div class="text-white/50 text-[10px]">{{ myCount }}/{{ subStore.listingLimit }} listings used</div>
         </div>
         <ChevronRight :size="13" class="text-white/30" />
       </router-link>
@@ -87,12 +87,13 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { useCreditsStore } from '@/stores/credits'
+import { useSubscriptionStore } from '@/stores/subscription'
+import { usePropertyStore } from '@/stores/property'
 import { useFavoritesStore } from '@/stores/favorites'
 import { mockNotifications } from '@/data/mockData'
 import {
   LayoutDashboard, Building2, MessageSquare, User, ClipboardList,
-  LogOut, Home, Bell, Plus, Star, Layers, ChevronRight, BarChart2,
+  LogOut, Home, Bell, Plus, Star, Crown, ChevronRight, BarChart2,
 } from 'lucide-vue-next'
 
 defineProps({ open: Boolean })
@@ -101,8 +102,11 @@ defineEmits(['close'])
 const route        = useRoute()
 const router       = useRouter()
 const userStore    = useUserStore()
-const creditsStore = useCreditsStore()
+const subStore     = useSubscriptionStore()
+const propStore    = usePropertyStore()
 const favStore     = useFavoritesStore()
+
+const myCount      = computed(() => propStore.myListings.length)
 
 const unreadCount = computed(() => mockNotifications.filter(n => !n.read).length)
 
@@ -132,6 +136,7 @@ const navGroups = computed(() => [
   {
     label: 'Account',
     items: [
+      { path: '/subscriptions', label: 'Subscription',  icon: Crown },
       { path: '/notifications', label: 'Notifications', icon: Bell, badge: unreadCount.value || null },
       { path: '/profile',       label: 'Profile',       icon: User },
     ],

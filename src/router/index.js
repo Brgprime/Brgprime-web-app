@@ -11,7 +11,7 @@ const routes = [
   { path: '/property/:id',     component: () => import('@/views/PropertyDetailView.vue') },
   { path: '/add-listing',      component: () => import('@/views/AddListingView.vue') },
   { path: '/my-listings',      component: () => import('@/views/MyListingsView.vue') },
-  { path: '/buy-posts',        component: () => import('@/views/BuyPostsView.vue') },
+  { path: '/buy-posts',        redirect: '/subscriptions' },
   { path: '/payments',         component: () => import('@/views/PaymentsView.vue') },
   { path: '/forum',            component: () => import('@/views/ForumView.vue') },
   { path: '/subscriptions',    component: () => import('@/views/SubscriptionsView.vue') },

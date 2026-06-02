@@ -19,6 +19,20 @@
       <!-- New badge -->
       <span v-if="property.isRecentlyPosted" class="absolute top-3 left-3 mt-0" style="top: auto; bottom: 3.25rem; left: 0.75rem; position: absolute;" hidden></span>
 
+      <!-- Premium / Boosted badge -->
+      <span
+        v-if="property.isPremium"
+        class="absolute bottom-3 right-3 badge bg-warning text-white flex items-center gap-1 backdrop-blur-sm text-[10px]"
+      >
+        <ArrowUpNarrowWide :size="11" /> Premium
+      </span>
+      <span
+        v-else-if="property.isBoosted"
+        class="absolute bottom-3 right-3 badge bg-success text-white flex items-center gap-1 backdrop-blur-sm text-[10px]"
+      >
+        <Rocket :size="11" /> Boosted
+      </span>
+
       <!-- Verified badge -->
       <span
         v-if="property.isVerified"
@@ -84,7 +98,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useFavoritesStore } from '@/stores/favorites'
-import { Heart, MapPin, BedDouble, Bath, Maximize2, Star, BadgeCheck } from 'lucide-vue-next'
+import { Heart, MapPin, BedDouble, Bath, Maximize2, Star, BadgeCheck, ArrowUpNarrowWide, Rocket } from 'lucide-vue-next'
 
 const props = defineProps({
   property: { type: Object, required: true },

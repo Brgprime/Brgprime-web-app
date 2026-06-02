@@ -7,14 +7,14 @@
           <p class="text-xs text-brand-muted mt-0.5">Fill in the details to publish your property</p>
         </div>
         <div class="flex items-center gap-2">
-          <!-- Credits badge -->
+          <!-- Plan quota badge -->
           <router-link
-            to="/buy-posts"
+            to="/subscriptions"
             class="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-md border transition-colors"
-            :class="creditsStore.balance > 0 ? 'border-success/30 bg-success/5 text-success' : 'border-danger/30 bg-danger/5 text-danger'"
+            :class="remainingListings > 0 ? 'border-success/30 bg-success/5 text-success' : 'border-danger/30 bg-danger/5 text-danger'"
           >
             <Layers :size="13" />
-            {{ creditsStore.balance }} credit{{ creditsStore.balance !== 1 ? 's' : '' }}
+            {{ myCount }}/{{ subStore.listingLimit }} listings
           </router-link>
           <button
             @click="saveDraft"
@@ -48,7 +48,7 @@
 
           <div>
             <label class="block text-xs font-semibold text-secondary mb-1.5">Listing Title <span class="text-danger">*</span></label>
-            <input v-model="form.title" class="input-field" placeholder="e.g. Modern 3-Bedroom Apartment in Lekki" required />
+            <input v-model="form.title" class="input-field" placeholder="e.g. Modern 3-Bedroom Apartment in Gwarinpa" required />
           </div>
 
           <div>
@@ -66,7 +66,7 @@
 
           <div>
             <label class="block text-xs font-semibold text-secondary mb-1.5">Full Address <span class="text-danger">*</span></label>
-            <input v-model="form.address" class="input-field" placeholder="e.g. 14 Admiralty Way, Lekki Phase 1, Lagos" required />
+            <input v-model="form.address" class="input-field" placeholder="e.g. 14 Admiralty Way, Lekki, Lagos  ·  Plot 12, Jabi, Abuja" required />
           </div>
 
           <div class="flex flex-col sm:flex-row gap-3">
@@ -274,6 +274,53 @@
           </div>
         </div>
 
+        <!-- G: Visibility (paid plans only) -->
+        <div v-if="subStore.isPaid" class="card p-5">
+          <h3 class="font-bold text-secondary mb-1">Boost Visibility</h3>
+          <p class="text-xs text-brand-muted mb-3">Use your plan allowance to get this listing seen by more people</p>
+          <div class="space-y-3">
+            <button
+              type="button"
+              @click="togglePremium"
+              :disabled="!form.premium && subStore.premiumRemaining <= 0"
+              class="w-full flex items-center gap-3 p-3 border-2 rounded-md transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              :class="form.premium ? 'border-warning bg-warning/5' : 'border-brand-border hover:border-warning'"
+            >
+              <div class="w-9 h-9 rounded-md bg-warning/10 flex items-center justify-center flex-shrink-0">
+                <ArrowUpNarrowWide :size="17" class="text-warning" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-semibold text-secondary">Premium Listing</div>
+                <div class="text-xs text-brand-muted">Appears at the top of search results · {{ subStore.premiumRemaining }} left</div>
+              </div>
+              <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0"
+                :class="form.premium ? 'border-warning bg-warning' : 'border-brand-border'">
+                <Check v-if="form.premium" :size="12" class="text-white" />
+              </div>
+            </button>
+
+            <button
+              type="button"
+              @click="toggleBoost"
+              :disabled="!form.boost && subStore.boostsRemaining <= 0"
+              class="w-full flex items-center gap-3 p-3 border-2 rounded-md transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              :class="form.boost ? 'border-success bg-success/5' : 'border-brand-border hover:border-success'"
+            >
+              <div class="w-9 h-9 rounded-md bg-success/10 flex items-center justify-center flex-shrink-0">
+                <Rocket :size="17" class="text-success" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-semibold text-secondary">Listing Boost</div>
+                <div class="text-xs text-brand-muted">Extra visibility across the platform · {{ subStore.boostsRemaining }} left</div>
+              </div>
+              <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0"
+                :class="form.boost ? 'border-success bg-success' : 'border-brand-border'">
+                <Check v-if="form.boost" :size="12" class="text-white" />
+              </div>
+            </button>
+          </div>
+        </div>
+
         <!-- Publish -->
         <button type="submit" class="btn-primary w-full py-4 text-base font-bold" :disabled="loading">
           <span v-if="!loading" class="flex items-center justify-center gap-2">
@@ -286,19 +333,22 @@
       </form>
     </div>
 
-    <!-- No-credits modal -->
+    <!-- Listing-limit modal -->
     <Transition name="fade">
-      <div v-if="showCreditsPrompt" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4" @click.self="showCreditsPrompt = false">
+      <div v-if="showLimitPrompt" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4" @click.self="showLimitPrompt = false">
         <Transition name="slide-up">
-          <div v-if="showCreditsPrompt" class="bg-white rounded-2xl p-7 max-w-sm w-full text-center shadow-2xl">
+          <div v-if="showLimitPrompt" class="bg-white rounded-2xl p-7 max-w-sm w-full text-center shadow-2xl">
             <div class="w-16 h-16 bg-warning/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Layers :size="30" class="text-warning" />
             </div>
-            <h3 class="text-xl font-extrabold text-secondary mb-1">No Post Credits</h3>
-            <p class="text-brand-muted text-sm mb-5">You need post credits to publish a listing. Buy a bundle and start posting instantly.</p>
+            <h3 class="text-xl font-extrabold text-secondary mb-1">Listing Limit Reached</h3>
+            <p class="text-brand-muted text-sm mb-5">
+              Your {{ subStore.plan.name }} allows up to {{ subStore.listingLimit }} listings.
+              Upgrade to publish more properties.
+            </p>
             <div class="flex flex-col gap-3">
-              <router-link to="/buy-posts" class="btn-primary w-full py-3 text-sm font-bold">Buy Post Credits</router-link>
-              <button @click="showCreditsPrompt = false" class="text-brand-muted text-sm font-medium hover:text-secondary">Maybe later</button>
+              <router-link to="/subscriptions" class="btn-primary w-full py-3 text-sm font-bold">View Plans</router-link>
+              <button @click="showLimitPrompt = false" class="text-brand-muted text-sm font-medium hover:text-secondary">Maybe later</button>
             </div>
           </div>
         </Transition>
@@ -312,16 +362,19 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AppLayout from '@/components/AppLayout.vue'
 import { usePropertyStore } from '@/stores/property'
-import { useCreditsStore } from '@/stores/credits'
+import { useSubscriptionStore } from '@/stores/subscription'
 import { useToastStore } from '@/stores/toast'
-import { X, Plus, Loader2, CheckCircle, Layers, Phone, Mail, MessageCircle } from 'lucide-vue-next'
+import { X, Plus, Loader2, CheckCircle, Layers, Check, Rocket, ArrowUpNarrowWide, Phone, Mail, MessageCircle } from 'lucide-vue-next'
 
 const router       = useRouter()
 const propStore    = usePropertyStore()
-const creditsStore = useCreditsStore()
+const subStore     = useSubscriptionStore()
 const toast        = useToastStore()
 const loading      = ref(false)
-const showCreditsPrompt = ref(false)
+const showLimitPrompt = ref(false)
+
+const myCount           = computed(() => propStore.myListings.length)
+const remainingListings = computed(() => Math.max(0, subStore.listingLimit - myCount.value))
 
 const form = reactive({
   listingType: 'rent',
@@ -330,8 +383,17 @@ const form = reactive({
   furnishingStatus: 'Unfurnished', propertyCondition: 'Good',
   serviceCharge: null, tenure: '', description: '', amenities: [], images: [],
   landSize: '', zoning: '', minStay: null, maxGuests: null,
-  contact: 'call',
+  contact: 'call', premium: false, boost: false,
 })
+
+const togglePremium = () => {
+  if (!form.premium && subStore.premiumRemaining <= 0) return
+  form.premium = !form.premium
+}
+const toggleBoost = () => {
+  if (!form.boost && subStore.boostsRemaining <= 0) return
+  form.boost = !form.boost
+}
 
 const listingTypes = [
   { value: 'rent',          label: 'For Rent'       },
@@ -425,23 +487,24 @@ const publish = async () => {
     return
   }
 
-  // Check credits
-  if (!creditsStore.hasCredits) {
-    showCreditsPrompt.value = true
+  // Enforce plan listing quota
+  if (!subStore.canPostListing(myCount.value)) {
+    showLimitPrompt.value = true
     return
   }
 
   loading.value = true
   await new Promise(r => setTimeout(r, 1200))
-  const used = creditsStore.useCredit()
-  if (!used) {
-    loading.value = false
-    showCreditsPrompt.value = true
-    return
-  }
+
+  // Consume premium / boost allowance if selected
+  const isPremium = form.premium && subStore.usePremium()
+  const isBoosted = form.boost && subStore.useBoost()
+
   propStore.addListing({
     ...form,
-    images: form.images.length ? form.images : [`https://picsum.photos/800/600?random=${Date.now()}`],
+    isPremium,
+    isBoosted,
+    images: form.images.length ? form.images : ['/properties/p10.jpeg'],
   })
   loading.value = false
   toast.success('Listing published successfully!')

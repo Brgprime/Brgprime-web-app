@@ -10,7 +10,7 @@
         <div class="flex gap-3">
           <select v-model="propStore.selectedLocation" class="input-field flex-1 sm:w-40 sm:flex-none">
             <option>All Locations</option>
-            <option v-for="loc in lagosLocations" :key="loc">{{ loc }}</option>
+            <option v-for="loc in nigerianLocations" :key="loc">{{ loc }}</option>
           </select>
           <button @click="showFilter = true" class="btn-secondary px-4 flex items-center gap-2 whitespace-nowrap flex-shrink-0">
             <SlidersHorizontal :size="16" />
@@ -70,7 +70,7 @@ import AppLayout from '@/components/AppLayout.vue'
 import PropertyCard from '@/components/PropertyCard.vue'
 import FilterModal from '@/components/FilterModal.vue'
 import { usePropertyStore } from '@/stores/property'
-import { lagosLocations } from '@/data/nigerianLocations'
+import { nigerianLocations } from '@/data/nigerianLocations'
 import { Search, SlidersHorizontal, LayoutGrid, List, SearchX } from 'lucide-vue-next'
 
 const propStore = usePropertyStore()

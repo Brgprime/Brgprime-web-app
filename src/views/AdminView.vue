@@ -63,7 +63,7 @@
             <div class="flex items-center justify-between mb-5">
               <div>
                 <h3 class="font-bold text-secondary">Revenue Overview</h3>
-                <p class="text-xs text-brand-muted mt-0.5">Platform earnings from post credits & subscriptions</p>
+                <p class="text-xs text-brand-muted mt-0.5">Platform earnings from subscription plans</p>
               </div>
               <span class="text-xl font-extrabold text-success">₦14.3M</span>
             </div>
@@ -463,7 +463,7 @@
             <div class="flex justify-between"><span class="text-brand-muted">Phone</span><span class="font-medium text-secondary">{{ selectedUser.phone }}</span></div>
             <div class="flex justify-between"><span class="text-brand-muted">Joined</span><span class="font-medium text-secondary">{{ selectedUser.joined }}</span></div>
             <div class="flex justify-between"><span class="text-brand-muted">Listings</span><span class="font-medium text-secondary">{{ selectedUser.listings }}</span></div>
-            <div class="flex justify-between"><span class="text-brand-muted">Credits</span><span class="font-medium text-secondary">{{ selectedUser.credits }}</span></div>
+            <div class="flex justify-between"><span class="text-brand-muted">Plan</span><span class="font-medium text-secondary">{{ selectedUser.plan }}</span></div>
           </div>
           <div class="flex gap-3">
             <button
@@ -525,7 +525,7 @@ const maxRev = computed(() => Math.max(...revenueChart.map(d => d.val)))
 const recentActivity = [
   { id: 1, text: 'New user registered: Funmi Adeleke', time: '2 min ago', icon: UserPlus, color: 'text-primary',  bg: 'bg-primary/10'  },
   { id: 2, text: 'Listing flagged for review: Studio Apt, Yaba', time: '11 min ago', icon: Flag, color: 'text-warning', bg: 'bg-warning/10' },
-  { id: 3, text: 'Payment of ₦150,000 received (Standard Pack)', time: '34 min ago', icon: CreditCard, color: 'text-success', bg: 'bg-success/10' },
+  { id: 3, text: 'Payment of ₦40,000 received (Bronze Plan)', time: '34 min ago', icon: CreditCard, color: 'text-success', bg: 'bg-success/10' },
   { id: 4, text: 'User Emeka Johnson disabled by admin', time: '1 hr ago', icon: ShieldAlert, color: 'text-danger', bg: 'bg-danger/10' },
   { id: 5, text: 'Listing "Penthouse, Ikoyi" verified', time: '2 hrs ago', icon: BadgeCheck, color: 'text-success', bg: 'bg-success/10' },
 ]
@@ -539,14 +539,14 @@ const quickActions = [
 
 // ── Users ─────────────────────────────────────────────────────────────────
 const users = ref([
-  { id: 'u1', name: 'Tunde Adeyemi',    email: 'tunde@example.com',   phone: '08012345678', joined: 'Jan 15, 2024', listings: 4, credits: 3,  status: 'Active',   avatar: 'https://i.pravatar.cc/150?u=tunde'  },
-  { id: 'u2', name: 'Sarah Williams',   email: 'sarah@homes.ng',      phone: '08034567890', joined: 'Jan 10, 2024', listings: 7, credits: 10, status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=sarah'  },
-  { id: 'u3', name: 'Emeka Johnson',    email: 'emeka@realty.ng',     phone: '08056789012', joined: 'Dec 5, 2023',  listings: 3, credits: 0,  status: 'Disabled', avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=emeka'  },
-  { id: 'u4', name: 'Amara Peters',     email: 'amara@prime.ng',      phone: '08078901234', joined: 'Feb 2, 2024',  listings: 5, credits: 5,  status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=amara'  },
-  { id: 'u5', name: 'Chioma Obi',       email: 'chioma@property.ng',  phone: '07012345678', joined: 'Nov 20, 2023', listings: 2, credits: 0,  status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=chioma' },
-  { id: 'u6', name: 'Lagos Homes Realty',email:'lagos@homes.ng',      phone: '08099887766', joined: 'Oct 1, 2023',  listings: 9, credits: 20, status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=lagos'  },
-  { id: 'u7', name: 'Prime Properties', email: 'prime@estate.ng',     phone: '09012345678', joined: 'Sep 14, 2023', listings: 6, credits: 8,  status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=prime'  },
-  { id: 'u8', name: 'Funmi Adeleke',    email: 'funmi@gmail.com',     phone: '08023456789', joined: 'Mar 1, 2024',  listings: 0, credits: 0,  status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=funmi'  },
+  { id: 'u1', name: 'Tunde Adeyemi',    email: 'tunde@example.com',   phone: '08012345678', joined: 'Jan 15, 2024', listings: 4, plan: 'Silver Plan', status: 'Active',   avatar: 'https://i.pravatar.cc/150?u=tunde'  },
+  { id: 'u2', name: 'Sarah Williams',   email: 'sarah@homes.ng',      phone: '08034567890', joined: 'Jan 10, 2024', listings: 7, plan: 'Bronze Plan', status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=sarah'  },
+  { id: 'u3', name: 'Emeka Johnson',    email: 'emeka@realty.ng',     phone: '08056789012', joined: 'Dec 5, 2023',  listings: 3, plan: 'Free Plan',   status: 'Disabled', avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=emeka'  },
+  { id: 'u4', name: 'Amara Peters',     email: 'amara@prime.ng',      phone: '08078901234', joined: 'Feb 2, 2024',  listings: 5, plan: 'Silver Plan', status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=amara'  },
+  { id: 'u5', name: 'Chioma Obi',       email: 'chioma@property.ng',  phone: '07012345678', joined: 'Nov 20, 2023', listings: 2, plan: 'Free Plan',   status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=chioma' },
+  { id: 'u6', name: 'Lagos Homes Realty',email:'lagos@homes.ng',      phone: '08099887766', joined: 'Oct 1, 2023',  listings: 9, plan: 'Gold Plan',   status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=lagos'  },
+  { id: 'u7', name: 'Prime Properties', email: 'prime@estate.ng',     phone: '09012345678', joined: 'Sep 14, 2023', listings: 6, plan: 'Bronze Plan', status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=prime'  },
+  { id: 'u8', name: 'Funmi Adeleke',    email: 'funmi@gmail.com',     phone: '08023456789', joined: 'Mar 1, 2024',  listings: 0, plan: 'Free Plan',   status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=funmi'  },
 ])
 
 const filteredUsers = computed(() => {
@@ -611,17 +611,17 @@ const fmtPrice = (p) => {
 const revenueStats = [
   { label: 'Total Revenue',  value: '₦14.3M', icon: TrendingUp, color: 'text-success',  bg: 'bg-success/10'  },
   { label: 'This Month',     value: '₦4.1M',  icon: DollarSign, color: 'text-primary',  bg: 'bg-primary/10'  },
-  { label: 'Credit Sales',   value: '₦8.9M',  icon: CreditCard, color: 'text-warning',  bg: 'bg-warning/10'  },
-  { label: 'Subscriptions',  value: '₦5.4M',  icon: Activity,   color: 'text-secondary',bg: 'bg-secondary/10'},
+  { label: 'Subscriptions',  value: '₦8.9M',  icon: CreditCard, color: 'text-warning',  bg: 'bg-warning/10'  },
+  { label: 'Premium & Boosts',value: '₦5.4M', icon: Activity,   color: 'text-secondary',bg: 'bg-secondary/10'},
 ]
 
 const transactions = ref([
-  { id: 't1', user: 'Sarah Williams',    email: 'sarah@homes.ng',     type: 'Pro Pack',      typeClass: 'bg-success/10 text-success',   date: 'Mar 1, 2026',  amount: '₦200,000', status: 'Successful' },
-  { id: 't2', user: 'Lagos Homes Realty',email: 'lagos@homes.ng',     type: 'Standard Pack', typeClass: 'bg-primary/10 text-primary',   date: 'Feb 28, 2026', amount: '₦150,000', status: 'Successful' },
-  { id: 't3', user: 'Amara Peters',      email: 'amara@prime.ng',     type: 'Starter Pack',  typeClass: 'bg-warning/10 text-warning',   date: 'Feb 25, 2026', amount: '₦100,000', status: 'Successful' },
-  { id: 't4', user: 'Funmi Adeleke',     email: 'funmi@gmail.com',    type: 'Pro Pack',      typeClass: 'bg-success/10 text-success',   date: 'Feb 20, 2026', amount: '₦200,000', status: 'Successful' },
-  { id: 't5', user: 'Prime Properties',  email: 'prime@estate.ng',    type: 'Standard Pack', typeClass: 'bg-primary/10 text-primary',   date: 'Feb 18, 2026', amount: '₦150,000', status: 'Successful' },
-  { id: 't6', user: 'Chioma Obi',        email: 'chioma@property.ng', type: 'Starter Pack',  typeClass: 'bg-warning/10 text-warning',   date: 'Feb 10, 2026', amount: '₦100,000', status: 'Pending'    },
+  { id: 't1', user: 'Sarah Williams',    email: 'sarah@homes.ng',     type: 'Gold Plan',   typeClass: 'bg-success/10 text-success',   date: 'Mar 1, 2026',  amount: '₦64,000', status: 'Successful' },
+  { id: 't2', user: 'Lagos Homes Realty',email: 'lagos@homes.ng',     type: 'Bronze Plan', typeClass: 'bg-primary/10 text-primary',   date: 'Feb 28, 2026', amount: '₦40,000', status: 'Successful' },
+  { id: 't3', user: 'Amara Peters',      email: 'amara@prime.ng',     type: 'Silver Plan', typeClass: 'bg-warning/10 text-warning',   date: 'Feb 25, 2026', amount: '₦18,000', status: 'Successful' },
+  { id: 't4', user: 'Funmi Adeleke',     email: 'funmi@gmail.com',    type: 'Gold Plan',   typeClass: 'bg-success/10 text-success',   date: 'Feb 20, 2026', amount: '₦64,000', status: 'Successful' },
+  { id: 't5', user: 'Prime Properties',  email: 'prime@estate.ng',    type: 'Bronze Plan', typeClass: 'bg-primary/10 text-primary',   date: 'Feb 18, 2026', amount: '₦40,000', status: 'Successful' },
+  { id: 't6', user: 'Chioma Obi',        email: 'chioma@property.ng', type: 'Silver Plan', typeClass: 'bg-warning/10 text-warning',   date: 'Feb 10, 2026', amount: '₦18,000', status: 'Pending'    },
 ])
 
 // ── Reports ───────────────────────────────────────────────────────────────

@@ -50,7 +50,7 @@
       <!-- Background -->
       <div
         class="absolute inset-0 bg-cover bg-center"
-        style="background-image: url('https://picsum.photos/seed/brgprime2026/1600/900'); transform: scale(1.05);"
+        style="background-image: url('/properties/p29.jpeg'); transform: scale(1.05);"
       ></div>
       <div class="absolute inset-0 bg-gradient-to-r from-secondary/95 via-secondary/80 to-secondary/30"></div>
       <div class="absolute inset-0 bg-gradient-to-t from-secondary/50 via-transparent to-transparent"></div>
@@ -68,7 +68,7 @@
             <span class="text-primary">Property</span> Best Fit For You
           </h1>
           <p class="text-white/65 text-lg leading-relaxed mb-10 max-w-lg">
-            Browse thousands of verified listings — houses, apartments, land, and shortlets across Lagos and beyond.
+            Browse thousands of verified listings — houses, apartments, land, and shortlets across Nigeria.
           </p>
 
           <!-- Search card -->
@@ -161,7 +161,7 @@
         <div>
           <p class="text-xs font-bold text-primary uppercase tracking-widest mb-1">Curated for You</p>
           <h2 class="text-3xl font-extrabold text-secondary">Featured Listings</h2>
-          <p class="text-brand-muted mt-1 text-sm">Hand-picked premium properties across Lagos</p>
+          <p class="text-brand-muted mt-1 text-sm">Hand-picked premium properties across Nigeria</p>
         </div>
         <button @click="goToRegister" class="hidden sm:flex items-center gap-1 text-primary font-semibold text-sm hover:underline">
           View all <ChevronRight :size="16" />
@@ -659,26 +659,26 @@ const testimonials = [
     avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=adaeze',
   },
   {
-    text: 'As a property owner, BRG Prime helped me sell my Victoria Island property in under 2 weeks. The platform is professional and the support team is excellent.',
+    text: 'As a property owner, BRG Prime helped me sell my Maitama property in under 2 weeks. The platform is professional and the support team is excellent.',
     name: 'Emeka Nwosu',
     role: 'Property Owner',
-    location: 'Victoria Island, Lagos',
+    location: 'Maitama, Abuja',
     avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=emeka2',
   },
   {
-    text: 'I used BRG Prime to find a shortlet for my client visiting from Abuja. The photos matched perfectly, and the booking was straightforward. 10/10!',
+    text: 'I used BRG Prime to find a shortlet for my client visiting Port Harcourt. The photos matched perfectly, and the booking was straightforward. 10/10!',
     name: 'Funmi Adeyemi',
     role: 'Property Agent',
-    location: 'Ikoyi, Lagos',
+    location: 'Port Harcourt, Rivers',
     avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=funmi',
   },
 ]
 
 const faqs = [
-  { q: 'What makes BRG Prime different from other real estate platforms in Nigeria?', a: 'BRG Prime combines verified listings, government ID verification for all users, and a transparent post-credit system that ensures only serious landlords and agents list properties. Every listing is manually reviewed before going live.' },
+  { q: 'What makes BRG Prime different from other real estate platforms in Nigeria?', a: 'BRG Prime combines verified listings, government ID verification for all users, and flexible subscription plans that ensure only serious landlords and agents list properties. Every listing is manually reviewed before going live.' },
   { q: 'How do I book a property inspection?', a: 'Once you sign up and view a property listing, you can request a viewing directly from the property page. Our team coordinates with the owner or agent to schedule a convenient time for you.' },
-  { q: 'Is registration free?', a: 'Yes! Creating an account on BRG Prime is completely free. You only pay when you want to post a property listing, using our affordable post-credit bundles.' },
-  { q: 'How can BRG Prime help me sell or rent out my property?', a: 'Purchase a post-credit bundle, then list your property with photos, pricing, and full details. Your listing reaches thousands of verified buyers and tenants actively searching on our platform.' },
+  { q: 'Is registration free?', a: 'Yes! Creating an account on BRG Prime is completely free. Our Free Plan lets you list up to 3 properties, and you can upgrade to a paid plan anytime for more listings, premium placement and boosts.' },
+  { q: 'How can BRG Prime help me sell or rent out my property?', a: 'Choose a subscription plan, then list your property with photos, pricing, and full details. Paid plans unlock premium listings and boosts so your property reaches thousands of verified buyers and tenants actively searching on our platform.' },
   { q: 'What is the difference between Verified and Unverified listings?', a: 'Verified listings have been physically inspected or documentation-checked by our team. They carry a blue Verified badge and are prioritised in search results, giving owners more visibility.' },
 ]
 
