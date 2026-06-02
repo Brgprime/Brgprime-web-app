@@ -1,25 +1,13 @@
 <template>
   <div class="page-pad max-w-5xl mx-auto space-y-6 pb-24">
 
-    <!-- Greeting Row -->
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-brand-muted text-sm">{{ greeting }},</p>
-        <h2 class="text-xl font-extrabold text-secondary leading-tight">
-          {{ userStore.name.split(' ')[0] }}
-        </h2>
-        <p class="text-xs text-brand-muted mt-0.5">What are you looking for today?</p>
-      </div>
-      <router-link
-        to="/notifications"
-        class="relative w-11 h-11 bg-white rounded-md flex items-center justify-center shadow-card hover:shadow-card-hover transition-shadow"
-      >
-        <Bell :size="19" class="text-secondary" />
-        <span
-          v-if="unread"
-          class="absolute -top-1 -right-1 w-5 h-5 bg-danger text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-brand-bg"
-        >{{ unread }}</span>
-      </router-link>
+    <!-- Greeting -->
+    <div>
+      <p class="text-brand-muted text-sm">{{ greeting }},</p>
+      <h2 class="text-xl font-extrabold text-secondary leading-tight">
+        {{ userStore.name.split(' ')[0] }}
+      </h2>
+      <p class="text-xs text-brand-muted mt-0.5">What are you looking for today?</p>
     </div>
 
     <!-- Plan Banner -->
@@ -49,32 +37,6 @@
         </div>
       </div>
     </router-link>
-
-    <!-- Search Bar -->
-    <div class="relative cursor-pointer" @click="$router.push('/properties')">
-      <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-muted pointer-events-none" :size="17" />
-      <div
-        class="input-field pl-12 cursor-pointer bg-white select-none flex items-center text-brand-light"
-        style="pointer-events: none"
-      >
-        Search properties, locations...
-      </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <router-link
-        v-for="action in quickActions"
-        :key="action.label"
-        :to="action.path"
-        class="flex flex-col items-center gap-2 bg-white rounded-md py-4 px-2 shadow-card hover:shadow-card-hover transition-shadow"
-      >
-        <div class="w-10 h-10 rounded-md flex items-center justify-center" :class="action.bg">
-          <component :is="action.icon" :size="19" :class="action.color" />
-        </div>
-        <span class="text-xs font-semibold text-secondary text-center leading-tight">{{ action.label }}</span>
-      </router-link>
-    </div>
 
     <!-- Browse By Category -->
     <div>
@@ -158,12 +120,10 @@ import { useUserStore } from '@/stores/user'
 import { useSubscriptionStore } from '@/stores/subscription'
 import { usePropertyStore } from '@/stores/property'
 import { popularLocations } from '@/data/nigerianLocations'
-import { mockNotifications } from '@/data/mockData'
 import PropertyCard from '@/components/PropertyCard.vue'
 import {
-  Bell, Search, ChevronRight, Plus, Crown,
+  ChevronRight, Plus, Crown,
   Home, Tag, Key, FileText, Moon, Building2, Landmark, HardHat,
-  BarChart2, MessageSquare, Star, ClipboardList,
 } from 'lucide-vue-next'
 
 const userStore    = useUserStore()
@@ -175,15 +135,7 @@ const myCount      = computed(() => propStore.myListings.length)
 const hour     = new Date().getHours()
 const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
-const unread   = computed(() => mockNotifications.filter(n => !n.read).length)
 const featured = computed(() => propStore.featuredListings)
-
-const quickActions = [
-  { path: '/add-listing',  label: 'Post',     icon: Plus,         bg: 'bg-primary/10',  color: 'text-primary'  },
-  { path: '/my-listings',  label: 'My Posts', icon: ClipboardList,bg: 'bg-warning/10',  color: 'text-warning'  },
-  { path: '/profile/saved',label: 'Saved',    icon: Star,         bg: 'bg-danger/10',   color: 'text-danger'   },
-  { path: '/analytics',    label: 'Analytics',icon: BarChart2,    bg: 'bg-success/10',  color: 'text-success'  },
-]
 
 const categories = [
   { icon: Home,      label: 'Buy',        color: 'text-primary',          bg: 'bg-primary/10'   },
