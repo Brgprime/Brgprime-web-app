@@ -93,7 +93,7 @@ import { useFavoritesStore } from '@/stores/favorites'
 import { mockNotifications } from '@/data/mockData'
 import {
   LayoutDashboard, Building2, MessageSquare, User, ClipboardList,
-  LogOut, Home, Bell, Plus, Star, Crown, ChevronRight, BarChart2,
+  LogOut, Home, Bell, Plus, Star, Crown, ChevronRight,
   Tag, Key, FileText, Moon, Landmark, HardHat,
 } from 'lucide-vue-next'
 
@@ -141,9 +141,8 @@ const navGroups = computed(() => [
     ],
   },
   {
-    label: 'Insights',
+    label: 'Community',
     items: [
-      { path: '/analytics', label: 'Analytics', icon: BarChart2 },
       { path: '/forum',     label: 'Forum',     icon: MessageSquare },
     ],
   },
