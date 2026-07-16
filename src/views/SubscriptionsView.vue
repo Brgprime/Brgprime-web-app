@@ -58,10 +58,6 @@
           class="card p-6 relative flex flex-col"
           :class="plan.popular ? 'border-2 border-primary ring-2 ring-primary/20' : ''"
         >
-          <div v-if="plan.popular" class="absolute -top-3 left-1/2 -translate-x-1/2">
-            <span class="badge bg-primary text-white px-4 py-1.5 text-xs">Most Popular</span>
-          </div>
-
           <div class="mb-5">
             <div class="w-12 h-12 rounded-md flex items-center justify-center mb-3" :class="plan.iconBg">
               <component :is="plan.icon" :size="22" :class="plan.iconColor" />
