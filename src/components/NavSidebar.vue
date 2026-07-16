@@ -90,7 +90,7 @@ import { useUserStore } from '@/stores/user'
 import { useSubscriptionStore } from '@/stores/subscription'
 import { usePropertyStore } from '@/stores/property'
 import { useFavoritesStore } from '@/stores/favorites'
-import { mockNotifications } from '@/data/mockData'
+import { useNotificationsStore } from '@/stores/notifications'
 import {
   LayoutDashboard, Building2, MessageSquare, User, ClipboardList,
   LogOut, Home, Bell, Plus, Star, Crown, ChevronRight,
@@ -106,10 +106,11 @@ const userStore    = useUserStore()
 const subStore     = useSubscriptionStore()
 const propStore    = usePropertyStore()
 const favStore     = useFavoritesStore()
+const notifStore   = useNotificationsStore()
 
 const myCount      = computed(() => propStore.myListings.length)
 
-const unreadCount = computed(() => mockNotifications.filter(n => !n.read).length)
+const unreadCount = computed(() => notifStore.unread)
 
 const navGroups = computed(() => [
   {

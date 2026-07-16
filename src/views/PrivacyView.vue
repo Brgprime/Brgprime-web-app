@@ -62,6 +62,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import api from '@/lib/api'
 import AppLayout from '@/components/AppLayout.vue'
 import { useToastStore } from '@/stores/toast'
 import { Lock, Eye, EyeOff } from 'lucide-vue-next'
@@ -77,10 +78,18 @@ const settings = reactive([
   { label: 'Two-Factor Authentication', desc: 'Add extra security to your account', value: false },
 ])
 
-const changePassword = () => {
+const changePassword = async () => {
   if (pw.new !== pw.confirm) { toast.error('New passwords do not match.'); return }
   if (pw.new.length < 8) { toast.error('Password must be at least 8 characters.'); return }
-  toast.success('Password updated successfully!')
-  pw.current = ''; pw.new = ''; pw.confirm = ''
+  try {
+    await api.post('/users/me/change-password', {
+      currentPassword: pw.current,
+      newPassword: pw.new,
+    })
+    toast.success('Password updated successfully!')
+    pw.current = ''; pw.new = ''; pw.confirm = ''
+  } catch (e) {
+    toast.error(e.message || 'Could not update password.')
+  }
 }
 </script>

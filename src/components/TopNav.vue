@@ -54,15 +54,16 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { mockNotifications } from '@/data/mockData'
+import { useNotificationsStore } from '@/stores/notifications'
 import { Menu, Bell, Search } from 'lucide-vue-next'
 
 defineEmits(['toggle-sidebar'])
 
 const route  = useRoute()
 const userStore = useUserStore()
+const notifStore = useNotificationsStore()
 
-const unreadCount = computed(() => mockNotifications.filter(n => !n.read).length)
+const unreadCount = computed(() => notifStore.unread)
 
 const titleMap = {
   '/admin':           ['Admin Panel',       'Platform Control Center'],

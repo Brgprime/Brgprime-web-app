@@ -186,12 +186,24 @@
                   <span class="font-bold text-secondary">{{ user.listings }}</span>
                 </td>
                 <td class="px-4 py-3.5 text-center">
-                  <span class="badge text-xs" :class="user.status === 'Active' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'">
-                    {{ user.status }}
-                  </span>
+                  <div class="flex flex-col items-center gap-1">
+                    <span class="badge text-xs" :class="user.status === 'Active' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'">
+                      {{ user.status }}
+                    </span>
+                    <span v-if="user.role === 'admin'" class="badge text-xs bg-primary/10 text-primary">Admin</span>
+                  </div>
                 </td>
                 <td class="px-5 py-3.5">
                   <div class="flex items-center justify-end gap-2">
+                    <button
+                      @click="toggleAdmin(user)"
+                      class="text-xs font-semibold px-3 py-1.5 rounded-md border transition-all"
+                      :class="user.role === 'admin'
+                        ? 'border-secondary/30 text-secondary hover:bg-secondary hover:text-white'
+                        : 'border-primary/30 text-primary hover:bg-primary hover:text-white'"
+                    >
+                      {{ user.role === 'admin' ? 'Remove Admin' : 'Make Admin' }}
+                    </button>
                     <button
                       @click="toggleUserStatus(user)"
                       class="text-xs font-semibold px-3 py-1.5 rounded-md border transition-all"
@@ -550,9 +562,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AppLayout from '@/components/AppLayout.vue'
-import { mockProperties } from '@/data/mockData'
+import api from '@/lib/api'
 import { useToastStore } from '@/stores/toast'
 import {
   ShieldAlert, Users, Building2, BarChart2, Flag, Search, BadgeCheck,
@@ -569,6 +581,19 @@ const userFilter  = ref('All')
 const listingSearch = ref('')
 const listingFilter = ref('All')
 const selectedUser  = ref(null)
+const loading       = ref(true)
+
+const fmtDate = (iso) =>
+  iso ? new Date(iso).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' }) : ''
+const relTime = (iso) => {
+  const t = iso ? new Date(iso).getTime() : 0
+  const m = Math.floor((Date.now() - t) / 60000)
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m} min ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h} hr${h > 1 ? 's' : ''} ago`
+  return `${Math.floor(h / 24)} day(s) ago`
+}
 
 const tabs = [
   { id: 'overview',  label: 'Overview',  icon: BarChart2  },
@@ -579,27 +604,18 @@ const tabs = [
   { id: 'reports',   label: 'Reports',   icon: Flag,      badge: 2 },
 ]
 
-// ── Overview ──────────────────────────────────────────────────────────────
-const overviewStats = [
-  { label: 'Total Users',    value: '5,284',  trend: '+12%', icon: Users,      color: 'text-primary',  bg: 'bg-primary/10',  trendClass: 'bg-primary/10 text-primary'  },
-  { label: 'Active Listings',value: '12,401', trend: '+8%',  icon: Building2,  color: 'text-success',  bg: 'bg-success/10',  trendClass: 'bg-success/10 text-success'  },
-  { label: 'Monthly Revenue', value: '₦4.1M', trend: '+22%', icon: TrendingUp, color: 'text-warning',  bg: 'bg-warning/10',  trendClass: 'bg-warning/10 text-warning'  },
-  { label: 'New Today',      value: '47',     trend: '+3',   icon: UserPlus,   color: 'text-secondary',bg: 'bg-secondary/10',trendClass: 'bg-secondary/10 text-secondary'},
-]
+// ── Overview (populated from /admin/overview) ──────────────────────────────
+const overviewStats = ref([
+  { label: 'Total Users',     value: '—', trend: '', icon: Users,      color: 'text-primary',   bg: 'bg-primary/10',   trendClass: 'bg-primary/10 text-primary'   },
+  { label: 'Active Listings', value: '—', trend: '', icon: Building2,   color: 'text-success',   bg: 'bg-success/10',   trendClass: 'bg-success/10 text-success'   },
+  { label: 'Monthly Revenue', value: '—', trend: '', icon: TrendingUp,  color: 'text-warning',   bg: 'bg-warning/10',   trendClass: 'bg-warning/10 text-warning'   },
+  { label: 'New Today',       value: '—', trend: '', icon: UserPlus,    color: 'text-secondary', bg: 'bg-secondary/10', trendClass: 'bg-secondary/10 text-secondary'},
+])
 
-const revenueChart = [
-  { month: 'Jan', val: 180 }, { month: 'Feb', val: 240 }, { month: 'Mar', val: 210 },
-  { month: 'Apr', val: 310 }, { month: 'May', val: 390 }, { month: 'Jun', val: 410 },
-]
-const maxRev = computed(() => Math.max(...revenueChart.map(d => d.val)))
+const revenueChart = ref([])
+const maxRev = computed(() => Math.max(1, ...revenueChart.value.map(d => d.val)))
 
-const recentActivity = [
-  { id: 1, text: 'New user registered: Funmi Adeleke', time: '2 min ago', icon: UserPlus, color: 'text-primary',  bg: 'bg-primary/10'  },
-  { id: 2, text: 'Listing flagged for review: Studio Apt, Yaba', time: '11 min ago', icon: Flag, color: 'text-warning', bg: 'bg-warning/10' },
-  { id: 3, text: 'Payment of ₦40,000 received (Bronze Plan)', time: '34 min ago', icon: CreditCard, color: 'text-success', bg: 'bg-success/10' },
-  { id: 4, text: 'User Emeka Johnson disabled by admin', time: '1 hr ago', icon: ShieldAlert, color: 'text-danger', bg: 'bg-danger/10' },
-  { id: 5, text: 'Listing "Penthouse, Ikoyi" verified', time: '2 hrs ago', icon: BadgeCheck, color: 'text-success', bg: 'bg-success/10' },
-]
+const recentActivity = ref([])
 
 const quickActions = [
   { label: 'Manage Users',    tab: 'users',    icon: Users,       color: 'text-primary', bg: 'bg-primary/10'   },
@@ -608,17 +624,21 @@ const quickActions = [
   { label: 'View Reports',    tab: 'reports',  icon: Flag,        color: 'text-danger',  bg: 'bg-danger/10'    },
 ]
 
-// ── Users ─────────────────────────────────────────────────────────────────
-const users = ref([
-  { id: 'u1', name: 'Tunde Adeyemi',    email: 'tunde@example.com',   phone: '08012345678', joined: 'Jan 15, 2024', listings: 4, plan: 'Silver Plan', status: 'Active',   avatar: 'https://i.pravatar.cc/150?u=tunde'  },
-  { id: 'u2', name: 'Sarah Williams',   email: 'sarah@homes.ng',      phone: '08034567890', joined: 'Jan 10, 2024', listings: 7, plan: 'Bronze Plan', status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=sarah'  },
-  { id: 'u3', name: 'Emeka Johnson',    email: 'emeka@realty.ng',     phone: '08056789012', joined: 'Dec 5, 2023',  listings: 3, plan: 'Free Plan',   status: 'Disabled', avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=emeka'  },
-  { id: 'u4', name: 'Amara Peters',     email: 'amara@prime.ng',      phone: '08078901234', joined: 'Feb 2, 2024',  listings: 5, plan: 'Silver Plan', status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=amara'  },
-  { id: 'u5', name: 'Chioma Obi',       email: 'chioma@property.ng',  phone: '07012345678', joined: 'Nov 20, 2023', listings: 2, plan: 'Free Plan',   status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=chioma' },
-  { id: 'u6', name: 'Lagos Homes Realty',email:'lagos@homes.ng',      phone: '08099887766', joined: 'Oct 1, 2023',  listings: 9, plan: 'Gold Plan',   status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=lagos'  },
-  { id: 'u7', name: 'Prime Properties', email: 'prime@estate.ng',     phone: '09012345678', joined: 'Sep 14, 2023', listings: 6, plan: 'Bronze Plan', status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=prime'  },
-  { id: 'u8', name: 'Funmi Adeleke',    email: 'funmi@gmail.com',     phone: '08023456789', joined: 'Mar 1, 2024',  listings: 0, plan: 'Free Plan',   status: 'Active',   avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=funmi'  },
-])
+// ── Users (from /admin/users) ──────────────────────────────────────────────
+const users = ref([])
+
+const mapUser = (u) => ({
+  id: u.id,
+  name: u.name,
+  email: u.email,
+  phone: u.phone,
+  joined: fmtDate(u.createdAt || u.joinDate),
+  listings: u.listings ?? 0,
+  plan: u.plan || 'Free Plan',
+  status: u.status === 'disabled' ? 'Disabled' : 'Active',
+  role: u.role || 'user',
+  avatar: u.profileImageUrl || u.avatarUrl,
+})
 
 const filteredUsers = computed(() => {
   let list = users.value
@@ -630,18 +650,29 @@ const filteredUsers = computed(() => {
   return list
 })
 
-const toggleUserStatus = (user) => {
-  user.status = user.status === 'Active' ? 'Disabled' : 'Active'
-  toast.success(`${user.name} has been ${user.status === 'Active' ? 'enabled' : 'disabled'}.`)
+const toggleUserStatus = async (user) => {
+  const next = user.status === 'Active' ? 'disabled' : 'active'
+  try {
+    await api.patch(`/admin/users/${user.id}/status`, { status: next })
+    user.status = next === 'disabled' ? 'Disabled' : 'Active'
+    toast.success(`${user.name} has been ${user.status === 'Active' ? 'enabled' : 'disabled'}.`)
+  } catch (e) { toast.error(e.message) }
+}
+
+// Grant / revoke admin access.
+const toggleAdmin = async (user) => {
+  const makeAdmin = user.role !== 'admin'
+  try {
+    await api.patch(`/admin/users/${user.id}/role`, { role: makeAdmin ? 'admin' : 'user' })
+    user.role = makeAdmin ? 'admin' : 'user'
+    toast.success(makeAdmin ? `${user.name} is now an admin.` : `Admin access removed from ${user.name}.`)
+  } catch (e) { toast.error(e.message) }
 }
 
 const viewUser = (user) => { selectedUser.value = user }
 
-// ── Listings ──────────────────────────────────────────────────────────────
-const adminListings = ref(mockProperties.map((p, i) => ({
-  ...p,
-  adminStatus: i === 3 ? 'Pending' : i === 5 ? 'Disabled' : i === 10 ? 'Pending' : 'Active',
-})))
+// ── Listings (from /admin/listings) ────────────────────────────────────────
+const adminListings = ref([])
 
 const filteredListings = computed(() => {
   let list = adminListings.value
@@ -653,16 +684,35 @@ const filteredListings = computed(() => {
   return list
 })
 
-const toggleVerified   = (l)  => { l.isVerified = !l.isVerified; toast.success(`Listing ${l.isVerified ? 'verified' : 'unverified'}.`) }
-const approveListing   = (l)  => { l.adminStatus = 'Active'; toast.success('Listing approved and published.') }
-const toggleListingStatus = (l) => {
-  l.adminStatus = l.adminStatus === 'Disabled' ? 'Active' : 'Disabled'
-  toast.success(`Listing ${l.adminStatus === 'Active' ? 'enabled' : 'disabled'}.`)
+const toggleVerified = async (l) => {
+  try {
+    const { data } = await api.patch(`/admin/listings/${l.id}`, { action: 'toggleVerified' })
+    l.isVerified = data.isVerified
+    toast.success(`Listing ${l.isVerified ? 'verified' : 'unverified'}.`)
+  } catch (e) { toast.error(e.message) }
 }
-const deleteListing = (id) => {
-  const idx = adminListings.value.findIndex(l => l.id === id)
-  if (idx !== -1) adminListings.value.splice(idx, 1)
-  toast.success('Listing deleted.')
+const approveListing = async (l) => {
+  try {
+    const { data } = await api.patch(`/admin/listings/${l.id}`, { action: 'approve' })
+    l.adminStatus = data.adminStatus
+    toast.success('Listing approved and published.')
+  } catch (e) { toast.error(e.message) }
+}
+const toggleListingStatus = async (l) => {
+  const action = l.adminStatus === 'Disabled' ? 'enable' : 'disable'
+  try {
+    const { data } = await api.patch(`/admin/listings/${l.id}`, { action })
+    l.adminStatus = data.adminStatus
+    toast.success(`Listing ${data.adminStatus === 'Active' ? 'enabled' : 'disabled'}.`)
+  } catch (e) { toast.error(e.message) }
+}
+const deleteListing = async (id) => {
+  try {
+    await api.del(`/admin/listings/${id}`)
+    const idx = adminListings.value.findIndex(l => l.id === id)
+    if (idx !== -1) adminListings.value.splice(idx, 1)
+    toast.success('Listing deleted.')
+  } catch (e) { toast.error(e.message) }
 }
 
 const statusBadge = (s) => ({
@@ -678,22 +728,68 @@ const fmtPrice = (p) => {
   return `₦${p.toLocaleString()}`
 }
 
-// ── Revenue ───────────────────────────────────────────────────────────────
-const revenueStats = [
-  { label: 'Total Revenue',  value: '₦14.3M', icon: TrendingUp, color: 'text-success',  bg: 'bg-success/10'  },
-  { label: 'This Month',     value: '₦4.1M',  icon: DollarSign, color: 'text-primary',  bg: 'bg-primary/10'  },
-  { label: 'Subscriptions',  value: '₦8.9M',  icon: CreditCard, color: 'text-warning',  bg: 'bg-warning/10'  },
-  { label: 'Premium & Boosts',value: '₦5.4M', icon: Activity,   color: 'text-secondary',bg: 'bg-secondary/10'},
-]
-
-const transactions = ref([
-  { id: 't1', user: 'Sarah Williams',    email: 'sarah@homes.ng',     type: 'Gold Plan',   typeClass: 'bg-success/10 text-success',   date: 'Mar 1, 2026',  amount: '₦64,000', status: 'Successful' },
-  { id: 't2', user: 'Lagos Homes Realty',email: 'lagos@homes.ng',     type: 'Bronze Plan', typeClass: 'bg-primary/10 text-primary',   date: 'Feb 28, 2026', amount: '₦40,000', status: 'Successful' },
-  { id: 't3', user: 'Amara Peters',      email: 'amara@prime.ng',     type: 'Silver Plan', typeClass: 'bg-warning/10 text-warning',   date: 'Feb 25, 2026', amount: '₦18,000', status: 'Successful' },
-  { id: 't4', user: 'Funmi Adeleke',     email: 'funmi@gmail.com',    type: 'Gold Plan',   typeClass: 'bg-success/10 text-success',   date: 'Feb 20, 2026', amount: '₦64,000', status: 'Successful' },
-  { id: 't5', user: 'Prime Properties',  email: 'prime@estate.ng',    type: 'Bronze Plan', typeClass: 'bg-primary/10 text-primary',   date: 'Feb 18, 2026', amount: '₦40,000', status: 'Successful' },
-  { id: 't6', user: 'Chioma Obi',        email: 'chioma@property.ng', type: 'Silver Plan', typeClass: 'bg-warning/10 text-warning',   date: 'Feb 10, 2026', amount: '₦18,000', status: 'Pending'    },
+// ── Revenue (from /admin/revenue) ──────────────────────────────────────────
+const revenueStats = ref([
+  { label: 'Total Revenue',    value: '—', icon: TrendingUp, color: 'text-success',   bg: 'bg-success/10'   },
+  { label: 'This Month',       value: '—', icon: DollarSign, color: 'text-primary',   bg: 'bg-primary/10'   },
+  { label: 'Subscriptions',    value: '—', icon: CreditCard, color: 'text-warning',   bg: 'bg-warning/10'   },
+  { label: 'Premium & Boosts', value: '—', icon: Activity,   color: 'text-secondary', bg: 'bg-secondary/10' },
 ])
+
+const planClass = (plan) => ({
+  'Gold Plan': 'bg-success/10 text-success',
+  'Bronze Plan': 'bg-primary/10 text-primary',
+  'Silver Plan': 'bg-warning/10 text-warning',
+}[plan] || 'bg-brand-bg text-brand-muted')
+
+const transactions = ref([])
+
+// ── Load all admin data from the backend ───────────────────────────────────
+onMounted(async () => {
+  try {
+    const [ov, us, ls, rv] = await Promise.all([
+      api.get('/admin/overview'),
+      api.get('/admin/users'),
+      api.get('/admin/listings'),
+      api.get('/admin/revenue'),
+    ])
+    // Overview
+    const cards = ov.data.cards
+    overviewStats.value = overviewStats.value.map((s, i) => ({
+      ...s,
+      value: cards[i].currency ? fmtPrice(cards[i].value) : Number(cards[i].value).toLocaleString('en-NG'),
+      trend: cards[i].delta || '',
+    }))
+    revenueChart.value = (ov.data.revenueChart || []).map((d) => ({ month: d.month, val: d.value }))
+    recentActivity.value = (ov.data.recentActivity || []).map((a) => ({
+      id: a.id,
+      text: `${a.title}${a.by ? ` — ${a.by}` : ''}`,
+      time: relTime(a.time),
+      icon: Activity, color: 'text-primary', bg: 'bg-primary/10',
+    }))
+    // Users
+    users.value = us.data.map(mapUser)
+    // Listings
+    adminListings.value = ls.data
+    // Revenue
+    const rc = rv.data.cards
+    revenueStats.value = revenueStats.value.map((s, i) => ({ ...s, value: fmtPrice(rc[i].value) }))
+    transactions.value = (rv.data.transactions || []).map((t) => ({
+      id: t.id,
+      user: t.customer,
+      email: '',
+      type: t.plan,
+      typeClass: planClass(t.plan),
+      date: fmtDate(t.date),
+      amount: `₦${Number(t.amount).toLocaleString('en-NG')}`,
+      status: t.status,
+    }))
+  } catch (e) {
+    toast.error(e.message || 'Could not load admin data.')
+  } finally {
+    loading.value = false
+  }
+})
 
 // ── Analytics ─────────────────────────────────────────────────────────────
 const analyticsPeriod = ref('6M')

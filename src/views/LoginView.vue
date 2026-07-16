@@ -97,14 +97,13 @@ const handleLogin = async () => {
   error.value = ''
   if (form.password.length < 8) { error.value = 'Password must be at least 8 characters.'; return }
   loading.value = true
-  await new Promise(r => setTimeout(r, 900))
-  userStore.login({
-    name:  'Tunde Adeyemi',
-    email: form.email,
-    phone: '08012345678',
-    token: 'mock_token_' + Date.now(),
-  })
-  loading.value = false
-  router.push('/dashboard')
+  try {
+    await userStore.login({ email: form.email, password: form.password })
+    router.push('/dashboard')
+  } catch (e) {
+    error.value = e.message || 'Sign in failed. Please try again.'
+  } finally {
+    loading.value = false
+  }
 }
 </script>

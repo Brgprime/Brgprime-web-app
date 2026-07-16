@@ -121,8 +121,9 @@
         </router-link>
       </div>
 
-      <!-- Admin Panel -->
+      <!-- Admin Panel — only visible to admin-role users -->
       <router-link
+        v-if="userStore.isAdmin"
         to="/admin"
         class="flex items-center gap-4 p-4 rounded-md border-2 border-danger/20 bg-danger/5 hover:bg-danger/10 transition-colors"
       >
@@ -153,7 +154,7 @@ import { useUserStore } from '@/stores/user'
 import { useSubscriptionStore } from '@/stores/subscription'
 import { useFavoritesStore } from '@/stores/favorites'
 import { usePropertyStore } from '@/stores/property'
-import { mockNotifications } from '@/data/mockData'
+import { useNotificationsStore } from '@/stores/notifications'
 import AppLayout from '@/components/AppLayout.vue'
 import {
   BadgeCheck, Pencil, HelpCircle, MessageCircle, FileText, Info, ShieldCheck,
@@ -166,8 +167,9 @@ const userStore    = useUserStore()
 const subStore     = useSubscriptionStore()
 const favStore     = useFavoritesStore()
 const propStore    = usePropertyStore()
+const notifStore   = useNotificationsStore()
 
-const unread         = computed(() => mockNotifications.filter(n => !n.read).length)
+const unread         = computed(() => notifStore.unread)
 const myListingsCount = computed(() => propStore.myListings.length)
 const memberSince    = computed(() => {
   const d = new Date(userStore.joinDate || Date.now())

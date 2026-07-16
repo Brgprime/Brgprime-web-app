@@ -249,10 +249,12 @@
             <label
               v-if="form.images.length < 10"
               class="h-24 border-2 border-dashed border-brand-border rounded-md flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all"
+              :class="uploadingImages ? 'pointer-events-none opacity-60' : ''"
             >
-              <Plus :size="22" class="text-brand-muted mb-1" />
-              <span class="text-xs text-brand-muted">Add Photo</span>
-              <input type="file" accept="image/jpg,image/jpeg,image/png" multiple class="hidden" @change="handleImages" />
+              <Loader2 v-if="uploadingImages" :size="22" class="text-primary mb-1 animate-spin" />
+              <Plus v-else :size="22" class="text-brand-muted mb-1" />
+              <span class="text-xs text-brand-muted">{{ uploadingImages ? 'Uploading…' : 'Add Photo' }}</span>
+              <input type="file" accept="image/jpg,image/jpeg,image/png" multiple class="hidden" :disabled="uploadingImages" @change="handleImages" />
             </label>
           </div>
         </div>
@@ -360,6 +362,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import api from '@/lib/api'
 import AppLayout from '@/components/AppLayout.vue'
 import { usePropertyStore } from '@/stores/property'
 import { useSubscriptionStore } from '@/stores/subscription'
@@ -371,6 +374,7 @@ const propStore    = usePropertyStore()
 const subStore     = useSubscriptionStore()
 const toast        = useToastStore()
 const loading      = ref(false)
+const uploadingImages = ref(false)
 const showLimitPrompt = ref(false)
 
 const myCount           = computed(() => propStore.myListings.length)
@@ -454,11 +458,27 @@ const toggleAmenity  = (a) => {
   idx === -1 ? form.amenities.push(a) : form.amenities.splice(idx, 1)
 }
 
-const handleImages = (e) => {
-  Array.from(e.target.files).forEach(file => {
-    if (form.images.length >= 10) return
-    form.images.push(URL.createObjectURL(file))
-  })
+const handleImages = async (e) => {
+  const files = Array.from(e.target.files).slice(0, 10 - form.images.length)
+  e.target.value = ''
+  if (!files.length) return
+  uploadingImages.value = true
+  try {
+    const fd = new FormData()
+    files.forEach(f => fd.append('images', f))
+    const { data } = await api.upload('/uploads/images', fd)
+    form.images.push(...data.urls)
+  } catch (err) {
+    // Uploads not configured yet (503) → fall back to a local preview.
+    if (err.status === 503) {
+      files.forEach(f => form.images.push(URL.createObjectURL(f)))
+      toast.info('Image storage not set up yet — using a local preview.')
+    } else {
+      toast.error(err.message || 'Image upload failed.')
+    }
+  } finally {
+    uploadingImages.value = false
+  }
 }
 
 const removeImage = (i) => form.images.splice(i, 1)
@@ -487,27 +507,41 @@ const publish = async () => {
     return
   }
 
-  // Enforce plan listing quota
-  if (!subStore.canPostListing(myCount.value)) {
-    showLimitPrompt.value = true
-    return
-  }
-
   loading.value = true
-  await new Promise(r => setTimeout(r, 1200))
-
-  // Consume premium / boost allowance if selected
-  const isPremium = form.premium && subStore.usePremium()
-  const isBoosted = form.boost && subStore.useBoost()
-
-  propStore.addListing({
-    ...form,
-    isPremium,
-    isBoosted,
-    images: form.images.length ? form.images : ['/properties/p10.jpeg'],
-  })
-  loading.value = false
-  toast.success('Listing published successfully!')
-  setTimeout(() => router.push('/my-listings'), 800)
+  try {
+    // The backend enforces the plan quota and consumes premium/boost allowances.
+    // NOTE: images are local previews for now; wiring the R2 upload endpoint is
+    // the remaining piece (needs R2 keys configured).
+    await propStore.createListing({
+      title: form.title,
+      address: form.address,
+      price: Number(form.price),
+      listingType: form.listingType,
+      propertyType: form.propertyType,
+      description: form.description,
+      bedrooms: Number(form.bedrooms) || 0,
+      bathrooms: Number(form.bathrooms) || 0,
+      size: Number(form.size) || 0,
+      yearBuilt: form.yearBuilt ? Number(form.yearBuilt) : null,
+      furnishingStatus: form.furnishingStatus,
+      propertyCondition: form.propertyCondition,
+      amenities: form.amenities,
+      images: form.images,
+      isPremium: form.premium,
+      isBoosted: form.boost,
+    })
+    // Refresh subscription usage (premium/boost counts may have changed).
+    subStore.fetch?.().catch?.(() => {})
+    toast.success('Listing published successfully!')
+    setTimeout(() => router.push('/my-listings'), 800)
+  } catch (e) {
+    if (e.details?.code === 'LISTING_LIMIT_REACHED') {
+      showLimitPrompt.value = true
+    } else {
+      toast.error(e.message || 'Could not publish listing.')
+    }
+  } finally {
+    loading.value = false
+  }
 }
 </script>

@@ -139,7 +139,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AppLayout from '@/components/AppLayout.vue'
 import PaystackModal from '@/components/PaystackModal.vue'
 import { useSubscriptionStore, PLANS } from '@/stores/subscription'
@@ -153,6 +154,8 @@ import {
 const subStore  = useSubscriptionStore()
 const propStore = usePropertyStore()
 const toast     = useToastStore()
+const route     = useRoute()
+const router    = useRouter()
 
 const annual = ref(false)
 
@@ -191,14 +194,31 @@ const showModal      = ref(false)
 const checkoutBundle = ref(null)
 const pendingPlan    = ref(null)
 
-const choose = (plan) => {
+const choose = async (plan) => {
   if (plan.id === subStore.planId) return
+  const billing = annual.value ? 'annual' : 'monthly'
+
   // Free plan needs no payment.
   if (plan.price === 0) {
-    subStore.subscribe(plan.id)
-    toast.success('You are now on the Free Plan.')
+    try {
+      await subStore.subscribe('free')
+      toast.success('You are now on the Free Plan.')
+    } catch (e) { toast.error(e.message) }
     return
   }
+
+  // Real Paystack available → redirect to secure checkout.
+  if (subStore.paystackEnabled) {
+    try {
+      const { authorizationUrl } = await subStore.initializePaystack(plan.id, billing)
+      window.location.href = authorizationUrl
+    } catch (e) {
+      toast.error(e.message || 'Could not start checkout.')
+    }
+    return
+  }
+
+  // Dev fallback (no Paystack keys) → simulated modal.
   pendingPlan.value = plan
   const price = displayPrice(plan) * (annual.value ? 12 : 1)
   checkoutBundle.value = {
@@ -210,12 +230,33 @@ const choose = (plan) => {
   showModal.value = true
 }
 
-const onPaymentSuccess = () => {
-  if (pendingPlan.value) subStore.subscribe(pendingPlan.value.id)
+const onPaymentSuccess = async () => {
+  const plan = pendingPlan.value
   showModal.value = false
-  toast.success(`${pendingPlan.value?.name} activated — enjoy your new plan!`)
+  try {
+    await subStore.subscribe(plan.id, annual.value ? 'annual' : 'monthly')
+    toast.success(`${plan?.name} activated — enjoy your new plan!`)
+  } catch (e) {
+    toast.error(e.message)
+  }
   pendingPlan.value = null
 }
+
+// Load subscription + Paystack availability; handle return from Paystack checkout.
+onMounted(async () => {
+  subStore.fetch()
+  subStore.fetchPaystackConfig()
+  const ref = route.query.reference || route.query.trxref
+  if (ref) {
+    try {
+      await subStore.verifyPaystack(ref)
+      toast.success('Payment confirmed — your plan is now active!')
+    } catch (e) {
+      toast.error(e.message || 'Could not verify payment.')
+    }
+    router.replace({ query: {} })
+  }
+})
 
 const formatDate = (iso) => new Date(iso).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })
 

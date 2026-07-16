@@ -44,8 +44,14 @@
         </div>
       </div>
 
+      <!-- Loading -->
+      <div v-if="propStore.loading && !propStore.listings.length" class="text-center py-16">
+        <Loader2 :size="28" class="text-primary animate-spin mx-auto mb-3" />
+        <p class="text-brand-muted text-sm">Loading properties…</p>
+      </div>
+
       <!-- Grid -->
-      <div v-if="propStore.filteredListings.length" :class="viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'">
+      <div v-else-if="propStore.filteredListings.length" :class="viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'">
         <PropertyCard v-for="p in propStore.filteredListings" :key="p.id" :property="p" />
       </div>
 
@@ -72,7 +78,7 @@ import PropertyCard from '@/components/PropertyCard.vue'
 import FilterModal from '@/components/FilterModal.vue'
 import { usePropertyStore } from '@/stores/property'
 import { nigerianLocations } from '@/data/nigerianLocations'
-import { Search, SlidersHorizontal, LayoutGrid, List, SearchX } from 'lucide-vue-next'
+import { Search, SlidersHorizontal, LayoutGrid, List, SearchX, Loader2 } from 'lucide-vue-next'
 
 const propStore = usePropertyStore()
 const route = useRoute()

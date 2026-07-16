@@ -108,8 +108,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import api from '@/lib/api'
 import AppLayout from '@/components/AppLayout.vue'
 import { usePropertyStore } from '@/stores/property'
 import { useToastStore } from '@/stores/toast'
@@ -119,7 +120,8 @@ const route     = useRoute()
 const propStore = usePropertyStore()
 const toast     = useToastStore()
 
-const property  = computed(() => propStore.getById(route.query.id))
+const fetched   = ref(null)
+const property  = computed(() => fetched.value || propStore.getById(route.query.id))
 const loading   = ref(false)
 const submitted = ref(false)
 
@@ -127,12 +129,31 @@ const form = reactive({ name: '', phone: '', email: '', date: '', time: '', mess
 const minDate   = new Date().toISOString().split('T')[0]
 const timeSlots = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM']
 
+onMounted(async () => {
+  if (route.query.id) {
+    try { fetched.value = await propStore.fetchById(route.query.id) } catch { /* fallback below */ }
+  }
+})
+
 const submit = async () => {
   loading.value = true
-  await new Promise(r => setTimeout(r, 1200))
-  loading.value  = false
-  submitted.value = true
-  toast.success(`Viewing confirmed for ${form.date} at ${form.time}!`)
+  try {
+    await api.post('/viewings', {
+      propertyId: route.query.id,
+      fullName: form.name,
+      phone: form.phone.startsWith('0') ? form.phone : `0${form.phone}`,
+      email: form.email,
+      date: form.date,
+      time: form.time,
+      message: form.message,
+    })
+    submitted.value = true
+    toast.success(`Viewing confirmed for ${form.date} at ${form.time}!`)
+  } catch (e) {
+    toast.error(e.message || 'Could not book the viewing.')
+  } finally {
+    loading.value = false
+  }
 }
 
 const priceSuffix = computed(() => {

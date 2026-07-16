@@ -9,7 +9,7 @@
       <div class="space-y-3">
         <div
           v-for="n in notifications" :key="n.id"
-          @click="n.read = true"
+          @click="notifStore.markRead(n.id)"
           class="card p-4 flex items-start gap-4 cursor-pointer hover:shadow-card-hover transition-shadow"
           :class="!n.read ? 'border-l-4 border-primary' : ''"
         >
@@ -19,7 +19,7 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-start justify-between gap-2">
               <span class="font-semibold text-secondary text-sm">{{ n.title }}</span>
-              <span class="text-xs text-brand-light flex-shrink-0">{{ n.time }}</span>
+              <span class="text-xs text-brand-light flex-shrink-0">{{ relTime(n.time) }}</span>
             </div>
             <p class="text-brand-muted text-xs mt-0.5 leading-relaxed">{{ n.message }}</p>
           </div>
@@ -36,15 +36,29 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import AppLayout from '@/components/AppLayout.vue'
-import { mockNotifications } from '@/data/mockData'
+import { useNotificationsStore } from '@/stores/notifications'
 import { Bell, MessageSquare, BadgeCheck, CreditCard, TrendingUp, Calendar } from 'lucide-vue-next'
 
-const notifications = ref(mockNotifications.map(n => ({ ...n })))
-const unreadCount = computed(() => notifications.value.filter(n => !n.read).length)
+const notifStore = useNotificationsStore()
+const notifications = computed(() => notifStore.items)
+const unreadCount = computed(() => notifStore.unread)
 
-const markAllRead = () => notifications.value.forEach(n => n.read = true)
+const markAllRead = () => notifStore.markAllRead()
+
+onMounted(() => notifStore.fetch())
+
+const relTime = (iso) => {
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.floor(diff / 60000)
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m} min ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h} hr${h > 1 ? 's' : ''} ago`
+  const d = Math.floor(h / 24)
+  return `${d} day${d > 1 ? 's' : ''} ago`
+}
 
 const notifIcon = (type) => ({
   inquiry: MessageSquare, success: BadgeCheck, payment: CreditCard,

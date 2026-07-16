@@ -30,17 +30,19 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, onMounted } from 'vue'
+import api from '@/lib/api'
 import AppLayout from '@/components/AppLayout.vue'
 import PropertyCard from '@/components/PropertyCard.vue'
-import { useFavoritesStore } from '@/stores/favorites'
-import { usePropertyStore } from '@/stores/property'
 import { Heart } from 'lucide-vue-next'
 
-const favStore = useFavoritesStore()
-const propStore = usePropertyStore()
+// Load the full saved-property objects straight from the server.
+const savedProperties = ref([])
 
-const savedProperties = computed(() =>
-  propStore.listings.filter(p => favStore.isSaved(p.id))
-)
+onMounted(async () => {
+  try {
+    const { data } = await api.get('/favorites')
+    savedProperties.value = data
+  } catch { /* ignore */ }
+})
 </script>

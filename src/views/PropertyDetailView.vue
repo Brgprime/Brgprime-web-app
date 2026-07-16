@@ -135,7 +135,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AppLayout from '@/components/AppLayout.vue'
 import { usePropertyStore } from '@/stores/property'
@@ -146,8 +146,15 @@ const route = useRoute()
 const propStore = usePropertyStore()
 const favStore = useFavoritesStore()
 
-const property = computed(() => propStore.getById(route.params.id))
+const fetched = ref(null)
+const property = computed(() => fetched.value || propStore.getById(route.params.id))
 const activeImg = ref(0)
+
+onMounted(async () => {
+  try {
+    fetched.value = await propStore.fetchById(route.params.id)
+  } catch { /* not-found handled by the template fallback */ }
+})
 
 const formatType = (type) => {
   const m = { rent: 'For Rent', sale: 'For Sale', lease: 'For Lease', shortlet: 'Shortlet', commercialRent: 'Commercial', land: 'Land', landLease: 'Land Lease' }

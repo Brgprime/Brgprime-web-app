@@ -89,37 +89,67 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import api from '@/lib/api'
 import AppLayout from '@/components/AppLayout.vue'
+import { useToastStore } from '@/stores/toast'
 import { CreditCard, CheckCircle2, Clock, AlertCircle, MinusCircle } from 'lucide-vue-next'
 
+const toast = useToastStore()
 const showRecord = ref(false)
 const newPay = reactive({ name: '', property: '', amount: '', status: 'Paid' })
 
-const payments = ref([
-  { id: 1, name: 'Adebayo Okafor', property: 'Modern Luxury Apartment', date: 'Jun 1, 2024', amount: '₦2,500,000', status: 'Paid' },
-  { id: 2, name: 'Ngozi Eze', property: 'Studio Apartment, Yaba', date: 'Jan 1, 2024', amount: '₦800,000', status: 'Paid' },
-  { id: 3, name: 'Emeka Nwachukwu', property: '3-Bedroom Terrace', date: 'Mar 15, 2024', amount: '₦1,800,000', status: 'Overdue' },
-])
+const payments = ref([])
+const totals = ref({ received: 0, pending: 0, overdue: 0, thisMonth: 0 })
+
+const fmtMoney = (n) => {
+  if (n >= 1e9) return `₦${(n / 1e9).toFixed(1)}B`
+  if (n >= 1e6) return `₦${(n / 1e6).toFixed(1)}M`
+  if (n >= 1e3) return `₦${(n / 1e3).toFixed(0)}k`
+  return `₦${Number(n || 0).toLocaleString('en-NG')}`
+}
+const fmtDate = (iso) =>
+  new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+
+const mapRow = (p) => ({
+  id: p.id,
+  name: p.tenantName,
+  property: p.property,
+  date: fmtDate(p.date),
+  amount: `₦${Number(p.amount).toLocaleString('en-NG')}`,
+  status: p.status,
+})
 
 const summary = computed(() => [
-  { label: 'Total Received', value: '₦3.3M', color: 'text-success' },
-  { label: 'Pending', value: '₦0', color: 'text-warning' },
-  { label: 'Overdue', value: '₦1.8M', color: 'text-danger' },
-  { label: 'This Month', value: '₦0', color: 'text-primary' },
+  { label: 'Total Received', value: fmtMoney(totals.value.received), color: 'text-success' },
+  { label: 'Pending', value: fmtMoney(totals.value.pending), color: 'text-warning' },
+  { label: 'Overdue', value: fmtMoney(totals.value.overdue), color: 'text-danger' },
+  { label: 'This Month', value: fmtMoney(totals.value.thisMonth), color: 'text-primary' },
 ])
 
-const addPayment = () => {
-  payments.value.unshift({
-    id: Date.now(),
-    name: newPay.name,
-    property: newPay.property,
-    date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-    amount: `₦${Number(newPay.amount).toLocaleString()}`,
-    status: newPay.status,
-  })
-  Object.assign(newPay, { name: '', property: '', amount: '', status: 'Paid' })
-  showRecord.value = false
+const load = async () => {
+  const res = await api.get('/payments')
+  payments.value = res.data.map(mapRow)
+  totals.value = res.meta?.summary ?? totals.value
+}
+
+onMounted(() => { load().catch(() => {}) })
+
+const addPayment = async () => {
+  try {
+    await api.post('/payments', {
+      tenantName: newPay.name,
+      property: newPay.property,
+      amount: Number(newPay.amount),
+      status: newPay.status,
+    })
+    Object.assign(newPay, { name: '', property: '', amount: '', status: 'Paid' })
+    showRecord.value = false
+    await load()
+    toast.success('Payment recorded.')
+  } catch (e) {
+    toast.error(e.message || 'Could not record payment.')
+  }
 }
 
 const statusIcon = (s) => ({ Paid: CheckCircle2, Pending: Clock, Overdue: AlertCircle, Partial: MinusCircle }[s] || Clock)

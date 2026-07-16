@@ -97,15 +97,21 @@
 
 <script setup>
 import { ref, nextTick, onMounted } from 'vue'
+import api from '@/lib/api'
 import AppLayout from '@/components/AppLayout.vue'
-import { mockForumMessages } from '@/data/mockData'
 import { Users, Send, Info } from 'lucide-vue-next'
 
-const messages = ref([...mockForumMessages])
+const fmtTime = (iso) =>
+  iso ? new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
+
+const mapMsg = (m) => ({ ...m, time: fmtTime(m.time || m.createdAt) })
+
+const messages = ref([])
 const newMessage  = ref('')
 const chatEl      = ref(null)
 const inputEl     = ref(null)
 const someoneTyping = ref(false)
+const sending     = ref(false)
 
 const scrollToBottom = () =>
   nextTick(() => { if (chatEl.value) chatEl.value.scrollTop = chatEl.value.scrollHeight })
@@ -116,45 +122,38 @@ const autoResize = () => {
   inputEl.value.style.height = Math.min(inputEl.value.scrollHeight, 120) + 'px'
 }
 
-const sendMessage = () => {
+const sendMessage = async () => {
   const text = newMessage.value.trim()
-  if (!text) return
-  messages.value.push({
-    id:     'm' + Date.now(),
-    sender: 'Me',
-    text,
-    time:   new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    isMe:   true,
-    avatar: '',
-  })
+  if (!text || sending.value) return
+  sending.value = true
   newMessage.value = ''
-  nextTick(() => {
-    if (inputEl.value) { inputEl.value.style.height = 'auto' }
-  })
-  scrollToBottom()
+  nextTick(() => { if (inputEl.value) inputEl.value.style.height = 'auto' })
 
-  // Simulate a reply after 2s
-  someoneTyping.value = true
-  scrollToBottom()
-  setTimeout(() => {
-    someoneTyping.value = false
-    const replies = [
-      'Thanks for the update!',
-      'Noted. I\'ll follow up with my client.',
-      'That\'s a good deal. Let\'s discuss further.',
-      'Great! I have a few interested buyers as well.',
-    ]
-    messages.value.push({
-      id:     'm' + Date.now(),
-      sender: 'Lagos Homes Realty',
-      text:   replies[Math.floor(Math.random() * replies.length)],
-      time:   new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isMe:   false,
-      avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=lagos',
-    })
+  try {
+    const { data } = await api.post('/forum/messages', { text })
+    messages.value.push(mapMsg(data.message))
     scrollToBottom()
-  }, 2200)
+
+    // Show the typing indicator, then reveal the (server-generated) reply.
+    someoneTyping.value = true
+    scrollToBottom()
+    setTimeout(() => {
+      someoneTyping.value = false
+      if (data.reply) messages.value.push(mapMsg(data.reply))
+      scrollToBottom()
+    }, 1800)
+  } catch {
+    newMessage.value = text // restore on failure
+  } finally {
+    sending.value = false
+  }
 }
 
-onMounted(scrollToBottom)
+onMounted(async () => {
+  try {
+    const { data } = await api.get('/forum/messages')
+    messages.value = data.map(mapMsg)
+  } catch { /* ignore */ }
+  scrollToBottom()
+})
 </script>

@@ -108,15 +108,18 @@ const handleAvatar = (e) => {
 
 const save = async () => {
   saving.value = true
-  await new Promise(r => setTimeout(r, 600))
-  userStore.updateProfile({
-    name:            `${firstName.value} ${lastName.value}`.trim(),
-    email:           form.email,
-    phone:           form.phone.startsWith('0') ? form.phone : `0${form.phone}`,
-    bio:             form.bio,
-    profileImageUrl: form.profileImageUrl,
-  })
-  saving.value = false
-  toast.success('Profile updated successfully!')
+  try {
+    await userStore.updateProfile({
+      name:            `${firstName.value} ${lastName.value}`.trim(),
+      phone:           form.phone.startsWith('0') ? form.phone : `0${form.phone}`,
+      bio:             form.bio,
+      profileImageUrl: form.profileImageUrl,
+    })
+    toast.success('Profile updated successfully!')
+  } catch (e) {
+    toast.error(e.message || 'Could not update profile.')
+  } finally {
+    saving.value = false
+  }
 }
 </script>

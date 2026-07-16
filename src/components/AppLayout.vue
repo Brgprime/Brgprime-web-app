@@ -23,11 +23,28 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import NavSidebar from './NavSidebar.vue'
 import TopNav from './TopNav.vue'
+import { usePropertyStore } from '@/stores/property'
+import { useFavoritesStore } from '@/stores/favorites'
+import { useSubscriptionStore } from '@/stores/subscription'
+import { useNotificationsStore } from '@/stores/notifications'
 
 const sidebarOpen = ref(false)
+const propStore = usePropertyStore()
+const favStore = useFavoritesStore()
+const subStore = useSubscriptionStore()
+const notifStore = useNotificationsStore()
+
+// Load shared data for the authenticated app (guarded against redundant fetches).
+onMounted(() => {
+  propStore.ensureLoaded()
+  propStore.fetchMine().catch(() => {})
+  favStore.fetch()
+  subStore.fetch()
+  notifStore.fetch()
+})
 </script>
 
 <style scoped>

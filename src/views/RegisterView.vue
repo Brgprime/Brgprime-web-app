@@ -87,7 +87,12 @@
 
             <p v-if="formError" class="text-danger text-xs bg-danger/10 border border-danger/20 px-3 py-2 rounded-md">{{ formError }}</p>
 
-            <button type="submit" class="btn-primary w-full py-3 text-sm font-bold">Create Account</button>
+            <button type="submit" class="btn-primary w-full py-3 text-sm font-bold" :disabled="loading">
+              <span v-if="!loading">Create Account</span>
+              <span v-else class="flex items-center justify-center gap-2">
+                <Loader2 :size="15" class="animate-spin" /> Creating account...
+              </span>
+            </button>
 
             <div class="flex items-center gap-3 my-1">
               <div class="flex-1 h-px bg-brand-border"></div>
@@ -125,10 +130,16 @@
               :class="otp[i] ? 'border-primary bg-primary/5 text-primary' : 'border-brand-border text-secondary focus:border-primary'"
             />
           </div>
+          <p v-if="otpError" class="text-danger text-xs bg-danger/10 border border-danger/20 px-3 py-2 rounded-md mb-3">{{ otpError }}</p>
           <p class="text-brand-muted text-xs mb-4">
             Didn't get it? <button @click="resendOtp" class="text-primary font-semibold hover:underline">Resend code</button>
           </p>
-          <button @click="verifyOtp" class="btn-primary w-full py-3 text-sm font-bold">Verify & Continue</button>
+          <button @click="verifyOtp" class="btn-primary w-full py-3 text-sm font-bold" :disabled="verifying">
+            <span v-if="!verifying">Verify & Continue</span>
+            <span v-else class="flex items-center justify-center gap-2">
+              <Loader2 :size="15" class="animate-spin" /> Verifying...
+            </span>
+          </button>
         </div>
 
         <!-- Step 3: Success -->
@@ -159,7 +170,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { Home, Mail, Lock, Eye, EyeOff, ShieldCheck, CheckCircle2 } from 'lucide-vue-next'
+import { Home, Mail, Lock, Eye, EyeOff, ShieldCheck, CheckCircle2, Loader2 } from 'lucide-vue-next'
 
 const router    = useRouter()
 const userStore = useUserStore()
@@ -167,6 +178,9 @@ const userStore = useUserStore()
 const step      = ref(1)
 const showPw    = ref(false)
 const formError = ref('')
+const otpError  = ref('')
+const loading   = ref(false)
+const verifying = ref(false)
 const otp       = ref(['', '', '', '', '', ''])
 const otpInputs = ref([])
 
@@ -175,11 +189,33 @@ const form = reactive({
   password: '', confirmPassword: '', agreed: false,
 })
 
-const handleStep1 = () => {
+const prefillOtp = (code) => {
+  if (typeof code === 'string' && code.length === 6) {
+    otp.value = code.split('')
+  }
+}
+
+const handleStep1 = async () => {
   formError.value = ''
   if (form.password !== form.confirmPassword) { formError.value = 'Passwords do not match.'; return }
   if (form.password.length < 8) { formError.value = 'Password must be at least 8 characters.'; return }
-  step.value = 2
+  loading.value = true
+  try {
+    const data = await userStore.register({
+      firstName: form.firstName,
+      lastName:  form.lastName,
+      email:     form.email,
+      phone:     `0${form.phone}`,
+      password:  form.password,
+    })
+    prefillOtp(data.devOtp) // dev convenience when no email provider is set
+    step.value = 2
+    otpError.value = ''
+  } catch (e) {
+    formError.value = e.message || 'Could not create your account.'
+  } finally {
+    loading.value = false
+  }
 }
 
 const handleOtpInput = (i) => {
@@ -191,20 +227,33 @@ const handleOtpBack = (i) => {
   if (!otp.value[i] && i > 0) otpInputs.value[i - 1]?.focus()
 }
 
-const resendOtp = () => {
+const resendOtp = async () => {
+  otpError.value = ''
   otp.value = ['', '', '', '', '', '']
   otpInputs.value[0]?.focus()
+  try {
+    const data = await userStore.resendOtp(form.email)
+    prefillOtp(data.devOtp)
+  } catch (e) {
+    otpError.value = e.message
+  }
 }
 
 const verifyOtp = async () => {
-  step.value = 3
-  userStore.login({
-    name:  `${form.firstName} ${form.lastName}`,
-    email: form.email,
-    phone: `0${form.phone}`,
-    token: 'mock_token_' + Date.now(),
-  })
-  await new Promise(r => setTimeout(r, 2000))
-  router.push('/dashboard')
+  if (verifying.value) return
+  otpError.value = ''
+  verifying.value = true
+  try {
+    await userStore.verifyOtp({ email: form.email, code: otp.value.join('') })
+    step.value = 3
+    await new Promise(r => setTimeout(r, 1500))
+    router.push('/dashboard')
+  } catch (e) {
+    otpError.value = e.message || 'Invalid or expired code.'
+    otp.value = ['', '', '', '', '', '']
+    otpInputs.value[0]?.focus()
+  } finally {
+    verifying.value = false
+  }
 }
 </script>

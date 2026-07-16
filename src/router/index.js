@@ -22,7 +22,7 @@ const routes = [
   { path: '/profile/privacy',  component: () => import('@/views/PrivacyView.vue') },
   { path: '/profile/payments', component: () => import('@/views/PaymentMethodsView.vue') },
   { path: '/profile/saved',    component: () => import('@/views/SavedPropertiesView.vue') },
-  { path: '/admin',            component: () => import('@/views/AdminView.vue') },
+  { path: '/admin',            component: () => import('@/views/AdminView.vue'), meta: { admin: true } },
   { path: '/book-viewing',     component: () => import('@/views/BookViewingView.vue') },
   { path: '/generic/:title',   component: () => import('@/views/GenericContentView.vue') },
   { path: '/:pathMatch(.*)*',  redirect: '/dashboard' },
@@ -39,6 +39,9 @@ router.beforeEach((to) => {
 
   // Private routes require auth
   if (!to.meta.public && !token) return '/login'
+
+  // Admin-only routes require an admin role
+  if (to.meta.admin && localStorage.getItem('user_role') !== 'admin') return '/dashboard'
 
   // Authenticated users skip public pages (except landing — let them revisit)
   if (to.meta.public && token && to.path !== '/') return '/dashboard'
