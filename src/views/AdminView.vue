@@ -531,29 +531,75 @@
 
     <!-- User Detail Modal -->
     <Transition name="fade">
-      <div v-if="selectedUser" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4" @click.self="selectedUser = null">
-        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+      <div v-if="selectedUser" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-8" @click.self="selectedUser = null">
+        <div class="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl max-h-[85vh] overflow-y-auto">
+          <!-- Header -->
           <div class="flex items-center gap-4 mb-5">
             <img :src="selectedUser.avatar" class="w-16 h-16 rounded-full object-cover border-2 border-brand-border" />
-            <div>
-              <h3 class="font-extrabold text-secondary">{{ selectedUser.name }}</h3>
-              <p class="text-xs text-brand-muted">{{ selectedUser.email }}</p>
-              <span class="badge mt-1 text-xs" :class="selectedUser.status === 'Active' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'">{{ selectedUser.status }}</span>
+            <div class="min-w-0">
+              <h3 class="font-extrabold text-secondary flex items-center gap-2">
+                {{ selectedUser.name }}
+                <BadgeCheck v-if="userDetails?.emailVerified" :size="15" class="text-primary" />
+              </h3>
+              <p class="text-xs text-brand-muted truncate">{{ selectedUser.email }}</p>
+              <div class="flex items-center gap-1.5 mt-1">
+                <span class="badge text-xs" :class="selectedUser.status === 'Active' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'">{{ selectedUser.status }}</span>
+                <span v-if="selectedUser.role === 'admin'" class="badge text-xs bg-primary/10 text-primary">Admin</span>
+                <span v-if="userDetails?.emailVerified === false" class="badge text-xs bg-warning/10 text-warning">Unverified</span>
+              </div>
             </div>
           </div>
-          <div class="space-y-2 text-sm mb-5">
-            <div class="flex justify-between"><span class="text-brand-muted">Phone</span><span class="font-medium text-secondary">{{ selectedUser.phone }}</span></div>
-            <div class="flex justify-between"><span class="text-brand-muted">Joined</span><span class="font-medium text-secondary">{{ selectedUser.joined }}</span></div>
-            <div class="flex justify-between"><span class="text-brand-muted">Listings</span><span class="font-medium text-secondary">{{ selectedUser.listings }}</span></div>
-            <div class="flex justify-between"><span class="text-brand-muted">Plan</span><span class="font-medium text-secondary">{{ selectedUser.plan }}</span></div>
+
+          <p v-if="userDetails?.bio" class="text-xs text-brand-muted italic mb-4 bg-brand-bg rounded-md p-3">"{{ userDetails.bio }}"</p>
+
+          <!-- Stat tiles -->
+          <div class="grid grid-cols-3 gap-2 mb-4">
+            <div class="stat-card p-3 text-center"><div class="text-lg font-extrabold text-secondary">{{ userDetails?.listings ?? selectedUser.listings }}</div><div class="text-[11px] text-brand-muted">Listings</div></div>
+            <div class="stat-card p-3 text-center"><div class="text-lg font-extrabold text-secondary">{{ userDetails?.saved ?? '—' }}</div><div class="text-[11px] text-brand-muted">Saved</div></div>
+            <div class="stat-card p-3 text-center"><div class="text-lg font-extrabold text-secondary">{{ userDetails?.viewings ?? '—' }}</div><div class="text-[11px] text-brand-muted">Viewings</div></div>
           </div>
-          <div class="flex gap-3">
+
+          <!-- Details -->
+          <div class="space-y-2 text-sm mb-4">
+            <div class="flex justify-between"><span class="text-brand-muted">Phone</span><span class="font-medium text-secondary">{{ selectedUser.phone || '—' }}</span></div>
+            <div class="flex justify-between"><span class="text-brand-muted">Role</span><span class="font-medium text-secondary capitalize">{{ selectedUser.role }}</span></div>
+            <div class="flex justify-between"><span class="text-brand-muted">Member since</span><span class="font-medium text-secondary">{{ userDetails ? fmtDate(userDetails.joinDate) : selectedUser.joined }}</span></div>
+            <div class="flex justify-between"><span class="text-brand-muted">Account created</span><span class="font-medium text-secondary">{{ userDetails ? fmtDate(userDetails.createdAt) : '—' }}</span></div>
+            <div class="flex justify-between"><span class="text-brand-muted">Plan</span><span class="font-medium text-secondary">{{ selectedUser.plan }}</span></div>
+            <div v-if="userDetails?.renewsAt" class="flex justify-between"><span class="text-brand-muted">Renews</span><span class="font-medium text-secondary">{{ fmtDate(userDetails.renewsAt) }}</span></div>
+            <div v-if="userDetails" class="flex justify-between"><span class="text-brand-muted">Premium used</span><span class="font-medium text-secondary">{{ userDetails.premiumUsed }} / {{ userDetails.premiumLimit }}</span></div>
+            <div v-if="userDetails" class="flex justify-between"><span class="text-brand-muted">Boosts used</span><span class="font-medium text-secondary">{{ userDetails.boostsUsed }} / {{ userDetails.boostLimit }}</span></div>
+            <div v-if="userDetails" class="flex justify-between"><span class="text-brand-muted">Listing status</span><span class="font-medium text-secondary">{{ userDetails.listingStatus.Active }} active · {{ userDetails.listingStatus.Pending }} pending · {{ userDetails.listingStatus.Disabled }} disabled</span></div>
+            <div v-if="userDetails" class="flex justify-between"><span class="text-brand-muted">Total spent</span><span class="font-bold text-success">{{ fmtPrice(userDetails.totalSpent) }}</span></div>
+            <div v-if="userDetails" class="flex justify-between"><span class="text-brand-muted">Payments</span><span class="font-medium text-secondary">{{ userDetails.transactionsCount }} transaction(s)</span></div>
+            <div v-if="userDetails" class="flex justify-between"><span class="text-brand-muted">Forum messages</span><span class="font-medium text-secondary">{{ userDetails.forumMessages }}</span></div>
+            <div class="flex justify-between items-center"><span class="text-brand-muted">User ID</span><span class="font-mono text-[11px] text-brand-light">{{ selectedUser.id }}</span></div>
+          </div>
+
+          <!-- Recent listings -->
+          <div v-if="userDetails?.recentListings?.length" class="mb-4">
+            <div class="text-xs font-bold text-secondary mb-2">Recent listings</div>
+            <div class="space-y-1.5">
+              <div v-for="l in userDetails.recentListings" :key="l.id" class="flex items-center justify-between text-xs bg-brand-bg rounded-md px-3 py-2">
+                <span class="text-secondary truncate mr-2">{{ l.title }}</span>
+                <span class="text-brand-muted flex-shrink-0">{{ fmtPrice(l.price) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-wrap gap-2">
             <button
-              @click="toggleUserStatus(selectedUser); selectedUser = null"
-              class="flex-1 py-2.5 text-sm font-bold rounded-md border transition-all"
+              @click="toggleUserStatus(selectedUser)"
+              class="flex-1 min-w-[120px] py-2.5 text-sm font-bold rounded-md border transition-all"
               :class="selectedUser.status === 'Active' ? 'border-danger text-danger hover:bg-danger hover:text-white' : 'border-success text-success hover:bg-success hover:text-white'"
             >{{ selectedUser.status === 'Active' ? 'Disable User' : 'Enable User' }}</button>
-            <button @click="selectedUser = null" class="flex-1 py-2.5 text-sm font-bold btn-secondary">Close</button>
+            <button
+              @click="toggleAdmin(selectedUser)"
+              class="flex-1 min-w-[120px] py-2.5 text-sm font-bold rounded-md border transition-all"
+              :class="selectedUser.role === 'admin' ? 'border-secondary text-secondary hover:bg-secondary hover:text-white' : 'border-primary text-primary hover:bg-primary hover:text-white'"
+            >{{ selectedUser.role === 'admin' ? 'Remove Admin' : 'Make Admin' }}</button>
+            <button @click="selectedUser = null" class="flex-1 min-w-[120px] py-2.5 text-sm font-bold btn-secondary">Close</button>
           </div>
         </div>
       </div>
@@ -669,7 +715,15 @@ const toggleAdmin = async (user) => {
   } catch (e) { toast.error(e.message) }
 }
 
-const viewUser = (user) => { selectedUser.value = user }
+const userDetails = ref(null)
+const viewUser = async (user) => {
+  selectedUser.value = user
+  userDetails.value = null
+  try {
+    const { data } = await api.get(`/admin/users/${user.id}`)
+    userDetails.value = data
+  } catch { /* show basics if detail fetch fails */ }
+}
 
 // ── Listings (from /admin/listings) ────────────────────────────────────────
 const adminListings = ref([])
