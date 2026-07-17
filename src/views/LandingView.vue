@@ -387,7 +387,7 @@
       <div class="text-center mb-14">
         <p class="text-xs font-bold text-primary uppercase tracking-widest mb-2">Why BRG Prime</p>
         <h2 class="text-3xl font-extrabold text-secondary">Why Everyone Chooses BRG Prime</h2>
-        <p class="text-brand-muted mt-2 text-sm">Trusted by 15,000+ Nigerians for their real estate needs</p>
+        <p class="text-brand-muted mt-2 text-sm">Trusted by Nigerians for their real estate needs</p>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
         <div v-for="f in features" :key="f.title" class="text-center group">
@@ -611,9 +611,9 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { mockProperties } from '@/data/mockData'
+import api from '@/lib/api'
 import {
   Home, Search, MapPin, ChevronRight, ChevronDown, BadgeCheck,
   BedDouble, Bath, Lock, X, Plus, Mail, Phone, Star,
@@ -635,12 +635,7 @@ const gateProperty   = ref(null)
 // ── Data ───────────────────────────────────────────────────────────
 const navCategories = ['For Sale', 'For Rent', 'Shortlet']
 
-const stats = [
-  { value: '12,000+', label: 'Active Listings' },
-  { value: '36',      label: 'Cities Covered' },
-  { value: '15,000+', label: 'Registered Users' },
-  { value: '98%',     label: 'Verified Properties' },
-]
+const stats = ref([])
 
 const locations = ['All', 'Lekki', 'Victoria Island', 'Ikoyi', 'Ajah', 'Yaba', 'Gbagada', 'Magodo', 'Surulere', 'Ikeja']
 
@@ -688,11 +683,31 @@ const footerCols = [
   { title: 'Company', links: ['About Us', 'Careers', 'Help Center', 'FAQ', 'Contact Us', 'Privacy Policy'] },
 ]
 
-// ── Computed ────────────────────────────────────────────────────────
-const featuredProps  = computed(() => mockProperties.slice(0, 9))
-const rentProps      = computed(() => mockProperties.filter(p => p.listingType === 'rent').slice(0, 9))
-const saleProps      = computed(() => mockProperties.filter(p => p.listingType === 'sale').slice(0, 9))
-const shortletProps  = computed(() => mockProperties.filter(p => p.listingType === 'shortlet').slice(0, 8))
+// ── Real listings (public endpoint — no auth needed) ────────────────
+const allProps = ref([])
+const featuredProps  = computed(() => allProps.value.filter(p => p.isVerified).slice(0, 9))
+const rentProps      = computed(() => allProps.value.filter(p => p.listingType === 'rent').slice(0, 9))
+const saleProps      = computed(() => allProps.value.filter(p => p.listingType === 'sale').slice(0, 9))
+const shortletProps  = computed(() => allProps.value.filter(p => p.listingType === 'shortlet').slice(0, 8))
+
+onMounted(async () => {
+  try {
+    const { data } = await api.get('/properties', { limit: 100 })
+    allProps.value = data
+  } catch { /* ignore */ }
+  try {
+    const { data } = await api.get('/meta/dashboard-stats')
+    const byLabel = Object.fromEntries(data.stats.map(s => [s.label, s.value]))
+    const total = allProps.value.length
+    const verified = allProps.value.filter(p => p.isVerified).length
+    stats.value = [
+      { value: `${(byLabel['Active Listings'] ?? total).toLocaleString('en-NG')}`, label: 'Active Listings' },
+      { value: `${byLabel['Locations Covered'] ?? 0}`, label: 'Cities Covered' },
+      { value: `${(byLabel['Registered Users'] ?? 0).toLocaleString('en-NG')}`, label: 'Registered Users' },
+      { value: total ? `${Math.round((verified / total) * 100)}%` : '—', label: 'Verified Properties' },
+    ]
+  } catch { /* ignore */ }
+})
 
 // ── Helpers ─────────────────────────────────────────────────────────
 const listingLabel = (type) => {

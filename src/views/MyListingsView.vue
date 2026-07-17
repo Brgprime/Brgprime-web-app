@@ -60,8 +60,8 @@
 
               <div class="flex items-center justify-between mt-3 pt-2 border-t border-brand-border-light">
                 <div class="flex items-center gap-3 text-xs text-brand-muted">
-                  <span class="flex items-center gap-1"><Eye :size="11" /> {{ p.views || Math.floor(Math.random() * 200 + 20) }}</span>
-                  <span class="flex items-center gap-1"><Heart :size="11" /> {{ p.saves || Math.floor(Math.random() * 30 + 2) }}</span>
+                  <span class="flex items-center gap-1"><Eye :size="11" /> {{ p.views ?? 0 }}</span>
+                  <span class="flex items-center gap-1"><Heart :size="11" /> {{ p.saves ?? 0 }}</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <router-link :to="`/property/${p.id}`" class="text-primary text-xs font-semibold hover:underline">View</router-link>

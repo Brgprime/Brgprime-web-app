@@ -69,10 +69,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
+import api from '@/lib/api'
 import { useUserStore } from '@/stores/user'
 import { usePropertyStore } from '@/stores/property'
-import { popularLocations } from '@/data/nigerianLocations'
 import PropertyCard from '@/components/PropertyCard.vue'
 import { ChevronRight, Plus } from 'lucide-vue-next'
 
@@ -84,10 +84,18 @@ const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Go
 
 const featured = computed(() => propStore.featuredListings)
 
-const stats = [
-  { value: '12,400+', label: 'Active Listings'  },
-  { value: '5,200+',  label: 'Happy Users'      },
-  { value: '850+',    label: 'Agents & Sellers' },
-  { value: '36',      label: 'Locations'        },
-]
+// Real platform stats + popular locations from the backend.
+const stats = ref([])
+const popularLocations = ref([])
+
+onMounted(async () => {
+  try {
+    const { data } = await api.get('/meta/dashboard-stats')
+    stats.value = data.stats.map((s) => ({
+      label: s.label,
+      value: Number(s.value).toLocaleString('en-NG'),
+    }))
+    popularLocations.value = data.popularLocations
+  } catch { /* ignore */ }
+})
 </script>

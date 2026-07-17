@@ -80,9 +80,8 @@ import { ref, reactive } from 'vue'
 import AppLayout from '@/components/AppLayout.vue'
 import { CreditCard, Trash2 } from 'lucide-vue-next'
 
-const cards = ref([
-  { id: 1, type: 'visa', last4: '4242', expiry: '08/26' },
-])
+// Locally-added cards for this session (no card details are stored server-side).
+const cards = ref([])
 
 const newCard = reactive({ number: '', expiry: '', cvv: '', name: '' })
 

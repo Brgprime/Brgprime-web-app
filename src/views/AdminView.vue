@@ -407,7 +407,7 @@
         <!-- Views Chart -->
         <div class="card p-5">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-secondary">Platform Views</h3>
+            <h3 class="font-bold text-secondary">{{ analyticsSeriesLabel }}</h3>
             <div class="flex gap-2">
               <button v-for="p in ['3M','6M','1Y']" :key="p" @click="analyticsPeriod = p"
                 class="text-xs px-3 py-1 rounded-full transition-colors"
@@ -435,7 +435,7 @@
               <img :src="listing.img" class="w-12 h-10 rounded-md object-cover flex-shrink-0" />
               <div class="flex-1 min-w-0">
                 <div class="text-sm font-semibold text-secondary truncate">{{ listing.title }}</div>
-                <div class="text-xs text-brand-muted">{{ listing.views }} views · {{ listing.inquiries }} inquiries</div>
+                <div class="text-xs text-brand-muted">{{ listing.views }} views</div>
               </div>
               <div class="text-right flex-shrink-0">
                 <div class="text-sm font-bold text-primary">{{ listing.price }}</div>
@@ -447,7 +447,7 @@
 
         <!-- Lead Sources -->
         <div class="card p-5">
-          <h3 class="font-bold text-secondary mb-4">Lead Sources</h3>
+          <h3 class="font-bold text-secondary mb-4">{{ analyticsLeadLabel }}</h3>
           <div class="space-y-3">
             <div v-for="source in analyticsLeadSources" :key="source.label" class="flex items-center gap-3">
               <span class="text-sm text-secondary w-28 flex-shrink-0">{{ source.label }}</span>
@@ -786,8 +786,8 @@ const fmtPrice = (p) => {
 const revenueStats = ref([
   { label: 'Total Revenue',    value: '—', icon: TrendingUp, color: 'text-success',   bg: 'bg-success/10'   },
   { label: 'This Month',       value: '—', icon: DollarSign, color: 'text-primary',   bg: 'bg-primary/10'   },
-  { label: 'Subscriptions',    value: '—', icon: CreditCard, color: 'text-warning',   bg: 'bg-warning/10'   },
-  { label: 'Premium & Boosts', value: '—', icon: Activity,   color: 'text-secondary', bg: 'bg-secondary/10' },
+  { label: 'This Year',        value: '—', icon: CreditCard, color: 'text-warning',   bg: 'bg-warning/10'   },
+  { label: 'Pending',          value: '—', icon: Activity,   color: 'text-secondary', bg: 'bg-secondary/10' },
 ])
 
 const planClass = (plan) => ({
@@ -873,67 +873,83 @@ onMounted(async () => {
 // ── Analytics ─────────────────────────────────────────────────────────────
 const analyticsPeriod = ref('6M')
 
-const analyticsStats = [
-  { label: 'Active Listings',  value: '12,401', color: 'text-primary',   upDown: 8  },
-  { label: 'Total Views',      value: '184.2k', color: 'text-warning',   upDown: 22 },
-  { label: 'Inquiries',        value: '3,920',  color: 'text-secondary', upDown: 15 },
-  { label: 'Conversion Rate',  value: '3.4%',   color: 'text-success',   upDown: -2 },
-]
+const analyticsStats = ref([])
+const analyticsAllData = ref({ '3M': [], '6M': [], '1Y': [] })
+const analyticsSeriesLabel = ref('Activity')
+const analyticsListingPerf = ref([])
+const analyticsLeadSources = ref([])
+const analyticsLeadLabel = ref('Listings by Type')
 
-const analyticsAllData = {
-  '3M': [{ month: 'Apr', value: 320 }, { month: 'May', value: 480 }, { month: 'Jun', value: 610 }],
-  '6M': [
-    { month: 'Jan', value: 210 }, { month: 'Feb', value: 340 }, { month: 'Mar', value: 290 },
-    { month: 'Apr', value: 320 }, { month: 'May', value: 480 }, { month: 'Jun', value: 610 },
-  ],
-  '1Y': [
-    { month: 'J', value: 150 }, { month: 'F', value: 200 }, { month: 'M', value: 180 },
-    { month: 'A', value: 220 }, { month: 'M', value: 310 }, { month: 'J', value: 290 },
-    { month: 'J', value: 340 }, { month: 'A', value: 380 }, { month: 'S', value: 420 },
-    { month: 'O', value: 390 }, { month: 'N', value: 450 }, { month: 'D', value: 610 },
-  ],
+const analyticsChart = computed(() => analyticsAllData.value[analyticsPeriod.value] || [])
+const analyticsMax   = computed(() => Math.max(1, ...analyticsChart.value.map(d => d.value)))
+
+const monthLabels = (n) => {
+  const now = new Date(); const out = []
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    out.push(d.toLocaleString('en', { month: n > 6 ? 'narrow' : 'short' }))
+  }
+  return out
 }
-
-const analyticsChart = computed(() => analyticsAllData[analyticsPeriod.value])
-const analyticsMax   = computed(() => Math.max(...analyticsChart.value.map(d => d.value)))
-
-const analyticsListingPerf = [
-  { title: 'Modern Luxury Apartment, Lekki', views: 342, inquiries: 18, price: '₦2.5M/yr', status: 'Active', img: '/properties/p01.jpeg' },
-  { title: '4-Bedroom House, Maitama',        views: 218, inquiries: 9,  price: '₦85M',     status: 'Active', img: '/properties/p33.jpeg' },
-  { title: 'Penthouse Suite, Ikoyi',          views: 189, inquiries: 5,  price: '₦250M',    status: 'Active', img: '/properties/p30.jpeg' },
-]
-
-const analyticsLeadSources = [
-  { label: 'Direct Search',    pct: 45, color: 'bg-primary'          },
-  { label: 'Recommendations',  pct: 28, color: 'bg-success'          },
-  { label: 'Forum',            pct: 15, color: 'bg-warning'          },
-  { label: 'Social Media',     pct: 12, color: 'bg-secondary-variant'},
-]
+const statColors = ['text-primary', 'text-warning', 'text-secondary', 'text-success']
+const leadColorMap = { primary: 'bg-primary', success: 'bg-success', warning: 'bg-warning', secondary: 'bg-secondary-variant' }
 
 // ── Reports ───────────────────────────────────────────────────────────────
-const healthStats = [
-  { label: 'Uptime',       value: '99.9%', icon: Server,    color: 'text-success', bg: 'bg-success/10' },
-  { label: 'API Latency',  value: '42ms',  icon: Wifi,      color: 'text-primary', bg: 'bg-primary/10' },
-  { label: 'DB Size',      value: '1.2 GB',icon: Database,  color: 'text-warning', bg: 'bg-warning/10' },
-  { label: 'Avg Response', value: '180ms', icon: Clock,     color: 'text-secondary',bg:'bg-secondary/10'},
+const healthIcons = [
+  { icon: Server, color: 'text-success', bg: 'bg-success/10' },
+  { icon: Wifi, color: 'text-primary', bg: 'bg-primary/10' },
+  { icon: Database, color: 'text-warning', bg: 'bg-warning/10' },
+  { icon: Clock, color: 'text-secondary', bg: 'bg-secondary/10' },
 ]
+const healthStats = ref([])
+const flaggedContent = ref([])
+const platformLogs = ref([])
 
-const flaggedContent = ref([
-  { id: 'f1', title: 'Suspicious Listing — Duplicate Address',    description: 'Listing ID #4 shares the same address as 3 other listings. Possible duplicate or scam.', severity: 'High',   severityClass: 'bg-danger/10 text-danger',  icon: AlertTriangle, iconColor: 'text-danger',  iconBg: 'bg-danger/10',  time: '1 hr ago'  },
-  { id: 'f2', title: 'User Reported for Spam Messages',          description: 'User "Chioma Obi" has been reported 3 times for sending unsolicited DMs.',             severity: 'Medium', severityClass: 'bg-warning/10 text-warning',icon: MessageSquare, iconColor: 'text-warning', iconBg: 'bg-warning/10', time: '4 hrs ago' },
-])
+const levelClass = (lvl) => ({
+  INFO: 'bg-primary/10 text-primary', WARN: 'bg-warning/10 text-warning', ERROR: 'bg-danger/10 text-danger',
+}[lvl] || 'bg-brand-bg text-brand-muted')
 
-const platformLogs = [
-  { id: 1, level: 'INFO',  levelClass: 'bg-primary/10 text-primary',  time: '14:32:01', message: 'User auth token refreshed — user_id: u1' },
-  { id: 2, level: 'WARN',  levelClass: 'bg-warning/10 text-warning',  time: '14:28:14', message: 'Rate limit hit on POST /listings — IP: 41.xxx' },
-  { id: 3, level: 'INFO',  levelClass: 'bg-primary/10 text-primary',  time: '14:20:00', message: 'Payment webhook received — ref: BRG20260305' },
-  { id: 4, level: 'ERROR', levelClass: 'bg-danger/10 text-danger',    time: '13:55:42', message: 'Image upload failed — file too large (>5MB)' },
-  { id: 5, level: 'INFO',  levelClass: 'bg-primary/10 text-primary',  time: '13:40:11', message: 'New listing submitted — listing_id: 13' },
-  { id: 6, level: 'INFO',  levelClass: 'bg-primary/10 text-primary',  time: '13:10:00', message: 'Daily analytics snapshot generated' },
-]
+// Load real analytics + reports from the backend.
+onMounted(async () => {
+  try {
+    const [an, rp] = await Promise.all([api.get('/admin/analytics'), api.get('/admin/reports')])
+    // Analytics
+    analyticsStats.value = an.data.summary.map((s, i) => ({
+      label: s.label,
+      value: typeof s.value === 'number' ? s.value.toLocaleString('en-NG') : s.value,
+      color: statColors[i % statColors.length],
+      upDown: parseInt(s.delta) || 0,
+    }))
+    analyticsSeriesLabel.value = an.data.seriesLabel || 'Activity'
+    const v = an.data.views || {}
+    analyticsAllData.value = {
+      '3M': (v['3M'] || []).map((n, i) => ({ month: monthLabels(3)[i], value: n })),
+      '6M': (v['6M'] || []).map((n, i) => ({ month: monthLabels(6)[i], value: n })),
+      '1Y': (v['1Y'] || []).map((n, i) => ({ month: monthLabels(12)[i], value: n })),
+    }
+    analyticsListingPerf.value = (an.data.topListings || []).map((l) => ({
+      title: l.title, views: l.views, price: fmtPrice(l.price), status: l.status,
+      img: l.image || '/properties/p10.jpeg',
+    }))
+    analyticsLeadLabel.value = an.data.leadSourcesLabel || 'Listings by Type'
+    analyticsLeadSources.value = (an.data.leadSources || []).map((s) => ({
+      label: s.label, pct: s.value, color: leadColorMap[s.color] || 'bg-primary',
+    }))
+    // Reports
+    healthStats.value = (rp.data.systemHealth || []).map((h, i) => ({ ...h, ...healthIcons[i % healthIcons.length] }))
+    flaggedContent.value = rp.data.flaggedContent || []
+    platformLogs.value = (rp.data.logs || []).map((l, i) => ({
+      id: i,
+      level: l.level,
+      levelClass: levelClass(l.level),
+      time: l.time ? new Date(l.time).toLocaleTimeString('en-GB') : '',
+      message: l.message,
+    }))
+  } catch { /* ignore */ }
+})
 
 const resolveReport = (report) => {
-  const idx = flaggedContent.value.findIndex(r => r.id === report.id)
+  const idx = flaggedContent.value.findIndex((r) => r.id === report.id)
   if (idx !== -1) flaggedContent.value.splice(idx, 1)
   toast.success('Report resolved.')
 }
