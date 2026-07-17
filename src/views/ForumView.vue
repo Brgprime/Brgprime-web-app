@@ -10,7 +10,7 @@
           <h2 class="font-bold text-secondary leading-tight">Forum Group</h2>
           <div class="flex items-center gap-1.5 mt-0.5">
             <span class="w-2 h-2 bg-success rounded-full"></span>
-            <p class="text-xs text-brand-muted">{{ messages.length }} messages · 5 members online</p>
+            <p class="text-xs text-brand-muted">{{ messages.length }} messages · {{ membersOnline }} online</p>
           </div>
         </div>
         <button class="p-2 rounded-md text-brand-muted hover:bg-brand-bg transition-colors">
@@ -76,7 +76,7 @@
           v-model="newMessage"
           @keydown.enter.exact.prevent="sendMessage"
           @keydown.shift.enter="null"
-          @input="autoResize"
+          @input="onInput"
           placeholder="Type a message... (Enter to send, Shift+Enter for new line)"
           rows="1"
           class="input-field flex-1 resize-none leading-relaxed"
@@ -96,22 +96,34 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import api from '@/lib/api'
+import { createSocket } from '@/lib/socket'
+import { useUserStore } from '@/stores/user'
 import AppLayout from '@/components/AppLayout.vue'
 import { Users, Send, Info } from 'lucide-vue-next'
+
+const userStore = useUserStore()
 
 const fmtTime = (iso) =>
   iso ? new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
 
-const mapMsg = (m) => ({ ...m, time: fmtTime(m.time || m.createdAt) })
+// History (REST) already carries isMe; live (socket) carries senderId → compute isMe.
+const mapMsg = (m) => ({
+  ...m,
+  isMe: m.isMe ?? (m.senderId != null && m.senderId === userStore.id),
+  time: fmtTime(m.time || m.createdAt),
+})
 
 const messages = ref([])
 const newMessage  = ref('')
 const chatEl      = ref(null)
 const inputEl     = ref(null)
 const someoneTyping = ref(false)
-const sending     = ref(false)
+const membersOnline = ref(1)
+
+let socket = null
+let typingTimer = null
 
 const scrollToBottom = () =>
   nextTick(() => { if (chatEl.value) chatEl.value.scrollTop = chatEl.value.scrollHeight })
@@ -122,38 +134,52 @@ const autoResize = () => {
   inputEl.value.style.height = Math.min(inputEl.value.scrollHeight, 120) + 'px'
 }
 
-const sendMessage = async () => {
+// Send over the socket; the broadcast echoes it back (incl. to us), so we don't
+// append optimistically — the incoming 'forum:message' handler adds it once.
+const sendMessage = () => {
   const text = newMessage.value.trim()
-  if (!text || sending.value) return
-  sending.value = true
+  if (!text || !socket) return
+  socket.emit('forum:send', { text })
   newMessage.value = ''
   nextTick(() => { if (inputEl.value) inputEl.value.style.height = 'auto' })
+}
 
-  try {
-    const { data } = await api.post('/forum/messages', { text })
-    messages.value.push(mapMsg(data.message))
-    scrollToBottom()
-
-    // Show the typing indicator, then reveal the (server-generated) reply.
-    someoneTyping.value = true
-    scrollToBottom()
-    setTimeout(() => {
-      someoneTyping.value = false
-      if (data.reply) messages.value.push(mapMsg(data.reply))
-      scrollToBottom()
-    }, 1800)
-  } catch {
-    newMessage.value = text // restore on failure
-  } finally {
-    sending.value = false
-  }
+const onInput = () => {
+  autoResize()
+  socket?.emit('forum:typing')
 }
 
 onMounted(async () => {
+  // 1) Load history via REST.
   try {
     const { data } = await api.get('/forum/messages')
     messages.value = data.map(mapMsg)
   } catch { /* ignore */ }
   scrollToBottom()
+
+  // 2) Connect the realtime socket for live messages + presence.
+  socket = createSocket()
+
+  socket.on('forum:message', (m) => {
+    if (messages.value.some((x) => x.id === m.id)) return // dedupe
+    someoneTyping.value = false
+    messages.value.push(mapMsg(m))
+    scrollToBottom()
+  })
+
+  socket.on('forum:presence', ({ count }) => { membersOnline.value = count })
+
+  socket.on('forum:typing', () => {
+    someoneTyping.value = true
+    scrollToBottom()
+    clearTimeout(typingTimer)
+    typingTimer = setTimeout(() => { someoneTyping.value = false }, 2500)
+  })
+})
+
+onBeforeUnmount(() => {
+  clearTimeout(typingTimer)
+  socket?.disconnect()
+  socket = null
 })
 </script>
