@@ -356,7 +356,7 @@
         <div class="card overflow-hidden">
           <div class="px-5 py-4 border-b border-brand-border-light flex items-center justify-between">
             <h3 class="font-bold text-secondary">All Transactions</h3>
-            <button class="text-primary text-sm font-semibold hover:underline">Export CSV</button>
+            <button @click="exportCsv" class="text-primary text-sm font-semibold hover:underline">Export CSV</button>
           </div>
           <div class="overflow-x-auto">
           <table class="w-full text-sm min-w-[500px]">
@@ -797,6 +797,30 @@ const planClass = (plan) => ({
 }[plan] || 'bg-brand-bg text-brand-muted')
 
 const transactions = ref([])
+const transactionsRaw = ref([])
+
+// Build + download a CSV of the revenue transactions.
+const exportCsv = () => {
+  const header = ['Reference', 'Customer', 'Plan', 'Amount (NGN)', 'Status', 'Date']
+  const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const lines = [header.map(esc).join(',')]
+  transactionsRaw.value.forEach((t) => {
+    lines.push([
+      t.reference, t.customer, t.plan, t.amount, t.status,
+      t.date ? new Date(t.date).toISOString().slice(0, 10) : '',
+    ].map(esc).join(','))
+  })
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `brg-prime-transactions-${new Date().toISOString().slice(0, 10)}.csv`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+  toast.success('Transactions exported.')
+}
 
 // ── Load all admin data from the backend ───────────────────────────────────
 onMounted(async () => {
@@ -828,6 +852,7 @@ onMounted(async () => {
     // Revenue
     const rc = rv.data.cards
     revenueStats.value = revenueStats.value.map((s, i) => ({ ...s, value: fmtPrice(rc[i].value) }))
+    transactionsRaw.value = rv.data.transactions || []
     transactions.value = (rv.data.transactions || []).map((t) => ({
       id: t.id,
       user: t.customer,
