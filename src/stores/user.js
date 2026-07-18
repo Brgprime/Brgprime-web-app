@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import api, { setToken, getToken } from '@/lib/api'
+import api, { setToken, getToken, setRefreshToken } from '@/lib/api'
 
 const ls = (k, d = '') => localStorage.getItem(k) || d
 
@@ -33,7 +33,7 @@ export const useUserStore = defineStore('user', {
     // ── Auth ────────────────────────────────────────────────────────────
     async login({ email, password }) {
       const { data } = await api.post('/auth/login', { email, password })
-      this._setSession(data.token, data.user)
+      this._setSession(data.token, data.refreshToken, data.user)
       return data.user
     },
 
@@ -45,7 +45,7 @@ export const useUserStore = defineStore('user', {
 
     async verifyOtp({ email, code }) {
       const { data } = await api.post('/auth/verify-otp', { email, code })
-      this._setSession(data.token, data.user)
+      this._setSession(data.token, data.refreshToken, data.user)
       return data.user
     },
 
@@ -78,6 +78,7 @@ export const useUserStore = defineStore('user', {
     logout() {
       this.token = null
       setToken(null)
+      setRefreshToken(null)
       ;['user_id', 'user_name', 'user_email', 'user_phone', 'user_bio',
         'user_avatar', 'user_role', 'user_subscription'].forEach((k) =>
         localStorage.removeItem(k)
@@ -85,9 +86,10 @@ export const useUserStore = defineStore('user', {
     },
 
     // ── Internals ───────────────────────────────────────────────────────
-    _setSession(token, user) {
+    _setSession(token, refreshToken, user) {
       this.token = token
       setToken(token)
+      if (refreshToken) setRefreshToken(refreshToken)
       this._apply(user)
       this._persist()
     },
