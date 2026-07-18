@@ -31,7 +31,7 @@ const contentMap = {
     <h4 class="font-bold text-secondary">5. Limitation of Liability</h4>
     <p>BRG Prime is not liable for any transactions conducted between users. Always conduct due diligence before committing to any property transaction.</p>
     <h4 class="font-bold text-secondary">6. Contact</h4>
-    <p>For enquiries regarding these terms, contact us at legal@brgprime.ng.</p>
+    <p>For enquiries regarding these terms, contact us at legal@brgprime.com.</p>
   `,
   'Privacy Policy': `
     <h4 class="font-bold text-secondary">1. Information We Collect</h4>
@@ -54,7 +54,7 @@ const contentMap = {
     <h4 class="font-bold text-secondary">Our Values</h4>
     <p>Transparency · Integrity · Innovation · Customer-First</p>
     <h4 class="font-bold text-secondary">Contact</h4>
-    <p>Email: hello@brgprime.ng<br/>WhatsApp: +234 801 234 5678<br/>Address: 14 Admiralty Way, Lekki Phase 1, Lagos</p>
+    <p>Email: hello@brgprime.com<br/>WhatsApp: +234 801 234 5678<br/>Address: 14 Admiralty Way, Lekki Phase 1, Lagos</p>
   `,
 }
 

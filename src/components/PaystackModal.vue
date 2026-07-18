@@ -32,7 +32,7 @@
                 <span class="text-2xl font-extrabold text-gray-900">₦{{ formatPrice(bundle?.price) }}</span>
                 <span v-if="descriptor" class="text-sm text-gray-400">· {{ descriptor }}</span>
               </div>
-              <p class="text-xs text-gray-400 mt-1">brgprime.ng</p>
+              <p class="text-xs text-gray-400 mt-1">brgprime.com</p>
             </div>
 
             <div v-if="!paid" class="px-6 py-5 space-y-4">

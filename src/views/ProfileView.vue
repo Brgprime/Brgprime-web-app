@@ -94,7 +94,7 @@
       <!-- Support -->
       <div class="card overflow-hidden">
         <SectionHeader label="Support" />
-        <a href="mailto:support@brgprime.ng" class="flex items-center gap-4 px-5 py-3.5 hover:bg-brand-bg border-b border-brand-border-light">
+        <a href="mailto:support@brgprime.com" class="flex items-center gap-4 px-5 py-3.5 hover:bg-brand-bg border-b border-brand-border-light">
           <HelpCircle :size="18" class="text-brand-muted flex-shrink-0" />
           <span class="text-sm text-secondary flex-1">Help Center</span>
           <ChevronRight :size="16" class="text-brand-light" />

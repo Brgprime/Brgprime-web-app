@@ -486,13 +486,13 @@
         <p class="text-brand-muted mt-1 font-semibold text-sm">Ask BRG Prime</p>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <a href="mailto:support@brgprime.ng" class="card p-5 flex items-center gap-4 hover:shadow-card-hover transition-shadow">
+        <a href="mailto:support@brgprime.com" class="card p-5 flex items-center gap-4 hover:shadow-card-hover transition-shadow">
           <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
             <Mail :size="18" class="text-primary" />
           </div>
           <div>
             <div class="text-xs text-brand-muted mb-0.5">Email</div>
-            <div class="font-semibold text-secondary text-sm">support@brgprime.ng</div>
+            <div class="font-semibold text-secondary text-sm">support@brgprime.com</div>
           </div>
         </a>
         <a href="https://wa.me/2348012345678" target="_blank" class="card p-5 flex items-center gap-4 hover:shadow-card-hover transition-shadow">
