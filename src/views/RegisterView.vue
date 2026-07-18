@@ -32,11 +32,11 @@
             <div class="flex gap-3">
               <div class="flex-1">
                 <label class="block text-xs font-semibold text-secondary mb-1">First Name</label>
-                <input v-model="form.firstName" class="input-field" placeholder="Tunde" required />
+                <input v-model="form.firstName" class="input-field" placeholder="John" required />
               </div>
               <div class="flex-1">
                 <label class="block text-xs font-semibold text-secondary mb-1">Last Name</label>
-                <input v-model="form.lastName" class="input-field" placeholder="Adeyemi" required />
+                <input v-model="form.lastName" class="input-field" placeholder="Doe" required />
               </div>
             </div>
 
