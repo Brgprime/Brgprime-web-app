@@ -10,7 +10,7 @@ export const useUserStore = defineStore('user', {
     email:           ls('user_email'),
     phone:           ls('user_phone'),
     bio:             ls('user_bio'),
-    profileImageUrl: ls('user_avatar', 'https://i.pravatar.cc/150?u=brgprime'),
+    profileImageUrl: ls('user_avatar'),
     role:            ls('user_role', 'user'),
     token:           getToken(),
     joinDate:        ls('user_joinDate') || new Date().toISOString(),

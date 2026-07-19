@@ -64,7 +64,7 @@
         class="flex items-center gap-3 p-2 rounded-md hover:bg-white/10 transition-colors"
       >
         <div class="relative flex-shrink-0">
-          <img :src="userStore.profileImageUrl" class="w-9 h-9 rounded-full object-cover ring-2 ring-white/20" />
+          <UserAvatar :url="userStore.profileImageUrl" :name="userStore.name" class="w-9 h-9 rounded-full object-cover ring-2 ring-white/20" />
           <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-success rounded-full border-2 border-secondary-variant"></span>
         </div>
         <div class="flex-1 min-w-0">
@@ -91,6 +91,7 @@ import { useSubscriptionStore } from '@/stores/subscription'
 import { usePropertyStore } from '@/stores/property'
 import { useFavoritesStore } from '@/stores/favorites'
 import { useNotificationsStore } from '@/stores/notifications'
+import UserAvatar from '@/components/UserAvatar.vue'
 import {
   LayoutDashboard, Building2, MessageSquare, User, ClipboardList,
   LogOut, Home, Bell, Plus, Star, Crown, ChevronRight,

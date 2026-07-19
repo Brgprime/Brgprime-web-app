@@ -418,7 +418,7 @@
             </div>
             <p class="text-white/75 text-sm leading-relaxed italic mb-6">"{{ t.text }}"</p>
             <div class="flex items-center gap-3">
-              <img :src="t.avatar" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/20" />
+              <UserAvatar :name="t.name" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/20" />
               <div>
                 <div class="text-white font-bold text-sm">{{ t.name }}</div>
                 <div class="text-white/40 text-xs">{{ t.role }} · {{ t.location }}</div>
@@ -619,6 +619,7 @@ import {
   BedDouble, Bath, Lock, X, Plus, Mail, Phone, Star,
   TrendingUp, ShieldCheck, Zap,
 } from 'lucide-vue-next'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 // lucide doesn't export SquareDot — use a simple inline fallback
 const SquareDot = { template: '<svg xmlns="http://www.w3.org/2000/svg" :width="size" :height="size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>', props: ['size'] }
@@ -651,21 +652,18 @@ const testimonials = [
     name: 'Adaeze Okafor',
     role: 'Tenant',
     location: 'Lekki, Lagos',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=adaeze',
   },
   {
     text: 'As a property owner, BRG Prime helped me sell my Maitama property in under 2 weeks. The platform is professional and the support team is excellent.',
     name: 'Emeka Nwosu',
     role: 'Property Owner',
     location: 'Maitama, Abuja',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=emeka2',
   },
   {
     text: 'I used BRG Prime to find a shortlet for my client visiting Port Harcourt. The photos matched perfectly, and the booking was straightforward. 10/10!',
     name: 'Funmi Adeyemi',
     role: 'Property Agent',
     location: 'Port Harcourt, Rivers',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/png?seed=funmi',
   },
 ]
 

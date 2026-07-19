@@ -7,7 +7,7 @@
         <div class="flex items-start justify-between mb-4">
           <div class="flex items-center gap-4 min-w-0">
             <div class="relative flex-shrink-0">
-              <img :src="userStore.profileImageUrl" class="w-20 h-20 rounded-2xl object-cover border-2 border-brand-border" />
+              <UserAvatar :url="userStore.profileImageUrl" :name="userStore.name" class="w-20 h-20 rounded-2xl object-cover border-2 border-brand-border" />
               <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-success rounded-full border-2 border-white"></div>
             </div>
             <div class="min-w-0">
@@ -156,6 +156,7 @@ import { useFavoritesStore } from '@/stores/favorites'
 import { usePropertyStore } from '@/stores/property'
 import { useNotificationsStore } from '@/stores/notifications'
 import AppLayout from '@/components/AppLayout.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 import {
   BadgeCheck, Pencil, HelpCircle, MessageCircle, FileText, Info, ShieldCheck,
   ChevronRight, LogOut, Bell, Shield, CreditCard, Star, UserRound, Zap,

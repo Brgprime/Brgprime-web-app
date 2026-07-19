@@ -4,8 +4,9 @@
       <!-- Avatar Card -->
       <div class="card p-6 text-center mb-5">
         <div class="relative inline-block">
-          <img
-            :src="form.profileImageUrl || 'https://i.pravatar.cc/150?u=agent'"
+          <UserAvatar
+            :url="form.profileImageUrl"
+            :name="userStore.name"
             class="w-24 h-24 rounded-full object-cover mx-auto border-4 border-brand-border shadow-md"
           />
           <label
@@ -85,6 +86,7 @@ import AppLayout from '@/components/AppLayout.vue'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 import { Camera, Mail, Save, Loader2 } from 'lucide-vue-next'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 const userStore = useUserStore()
 const toast     = useToastStore()

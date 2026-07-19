@@ -168,7 +168,7 @@
               <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-brand-bg transition-colors">
                 <td class="px-5 py-3.5">
                   <div class="flex items-center gap-3">
-                    <img :src="user.avatar" class="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                    <UserAvatar :url="user.avatar" :name="user.name" class="w-9 h-9 rounded-full object-cover flex-shrink-0" />
                     <div>
                       <div class="font-semibold text-secondary text-sm">{{ user.name }}</div>
                       <div class="text-xs text-brand-muted md:hidden">{{ user.email }}</div>
@@ -292,7 +292,7 @@
                 </td>
                 <td class="px-4 py-3.5 hidden md:table-cell">
                   <div class="flex items-center gap-2">
-                    <img :src="listing.agentAvatar" class="w-6 h-6 rounded-full object-cover" />
+                    <UserAvatar :url="listing.agentAvatar" :name="listing.agentName" class="w-6 h-6 rounded-full object-cover" />
                     <span class="text-xs text-secondary">{{ listing.agentName }}</span>
                   </div>
                 </td>
@@ -535,7 +535,7 @@
         <div class="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl max-h-[85vh] overflow-y-auto">
           <!-- Header -->
           <div class="flex items-center gap-4 mb-5">
-            <img :src="selectedUser.avatar" class="w-16 h-16 rounded-full object-cover border-2 border-brand-border" />
+            <UserAvatar :url="selectedUser.avatar" :name="selectedUser.name" class="w-16 h-16 rounded-full object-cover border-2 border-brand-border" />
             <div class="min-w-0">
               <h3 class="font-extrabold text-secondary flex items-center gap-2">
                 {{ selectedUser.name }}
@@ -610,6 +610,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import AppLayout from '@/components/AppLayout.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 import api from '@/lib/api'
 import { useToastStore } from '@/stores/toast'
 import {

@@ -99,7 +99,7 @@
         <div class="card p-4">
           <h3 class="font-bold text-secondary mb-3">Listed By</h3>
           <div class="flex items-center gap-3">
-            <img :src="property.agentAvatar" class="w-12 h-12 rounded-full object-cover" />
+            <UserAvatar :url="property.agentAvatar" :name="property.agentName" class="w-12 h-12 rounded-full object-cover" />
             <div class="flex-1">
               <div class="font-bold text-secondary">{{ property.agentName }}</div>
               <div class="text-xs text-brand-muted">Real Estate Agent</div>
@@ -141,6 +141,7 @@ import AppLayout from '@/components/AppLayout.vue'
 import { usePropertyStore } from '@/stores/property'
 import { useFavoritesStore } from '@/stores/favorites'
 import { ArrowLeft, Heart, Share2, MapPin, Star, BedDouble, Bath, Maximize2, MessageSquare, Phone, BadgeCheck } from 'lucide-vue-next'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 const route = useRoute()
 const propStore = usePropertyStore()

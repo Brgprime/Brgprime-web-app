@@ -36,9 +36,10 @@
           class="flex gap-2.5"
           :class="msg.isMe ? 'flex-row-reverse' : ''"
         >
-          <img
+          <UserAvatar
             v-if="!msg.isMe"
-            :src="msg.avatar"
+            :url="msg.avatar"
+            :name="msg.sender"
             class="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-1 ring-2 ring-white"
           />
           <div :class="msg.isMe ? 'items-end' : 'items-start'" class="flex flex-col max-w-[75%]">
@@ -102,6 +103,7 @@ import { createSocket } from '@/lib/socket'
 import { useUserStore } from '@/stores/user'
 import AppLayout from '@/components/AppLayout.vue'
 import { Users, Send, Info } from 'lucide-vue-next'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 const userStore = useUserStore()
 

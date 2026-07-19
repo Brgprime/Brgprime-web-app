@@ -41,8 +41,9 @@
 
       <!-- Avatar -->
       <router-link to="/profile" class="ml-1">
-        <img
-          :src="userStore.profileImageUrl"
+        <UserAvatar
+          :url="userStore.profileImageUrl"
+          :name="userStore.name"
           class="w-8 h-8 rounded-full object-cover border-2 border-brand-border hover:border-primary transition-colors"
         />
       </router-link>
@@ -56,6 +57,7 @@ import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useNotificationsStore } from '@/stores/notifications'
 import { Menu, Bell, Search } from 'lucide-vue-next'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 defineEmits(['toggle-sidebar'])
 
