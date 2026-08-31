@@ -2,7 +2,35 @@
   command = "npm run build"
   publish = "dist"
 
+# ─── BuildQ AI ───────────────────────────────────────────────────────────────
+# BuildQ is a separate repo (AI-Quantity-Surveying) deployed on Vercel. These
+# two rules serve it under brgprime.com/boq without merging the codebases.
+# Netlify matches redirects in file order, so both MUST stay above the SPA
+# fallback below — under it they would never fire.
+
+# BuildQ API → the BRG Prime backend on Render. Deliberately narrow: BRG Prime's
+# own routes are untouched. Serving the API on this origin keeps BuildQ
+# same-origin with it, which is what lets the refresh token stay in an httpOnly
+# cookie instead of localStorage.
+[[redirects]]
+  from = "/api/buildq/*"
+  to = "https://brg-prime-api.onrender.com/api/buildq/:splat"
+  status = 200
+  force = true
+
+# BuildQ app → its Vercel deployment. :splat strips the /boq prefix, which is
+# why the app must be built with base=/boq/ (the default in its vite.config.js):
+# its index.html asks for /boq/assets/*, which arrives here and proxies through
+# to /assets/* on Vercel. This is also why the bare .vercel.app URL renders
+# blank — that is expected, not a broken deploy.
+[[redirects]]
+  from = "/boq/*"
+  to = "https://ai-quantity-surveying.vercel.app/:splat"
+  status = 200
+  force = true
+
 # SPA fallback so client-side routes (e.g. /properties) don't 404 on refresh.
+# Must stay last: it matches everything.
 [[redirects]]
   from = "/*"
   to = "/index.html"
