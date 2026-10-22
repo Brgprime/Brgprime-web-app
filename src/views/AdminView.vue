@@ -63,18 +63,20 @@
             <div class="flex items-center justify-between mb-5">
               <div>
                 <h3 class="font-bold text-secondary">Revenue Overview</h3>
-                <p class="text-xs text-brand-muted mt-0.5">Platform earnings from subscription plans</p>
+                <p class="text-xs text-brand-muted mt-0.5">Subscription earnings, last 6 months</p>
               </div>
-              <span class="text-xl font-extrabold text-success">₦14.3M</span>
+              <span class="text-xl font-extrabold text-success">{{ fmtPrice(chartTotal) }}</span>
             </div>
             <div class="flex items-end gap-1.5 h-32">
-              <div v-for="(bar, i) in revenueChart" :key="i" class="flex-1 flex flex-col items-center gap-1 group">
-                <span class="text-[10px] text-brand-light opacity-0 group-hover:opacity-100 transition-opacity">{{ bar.val }}</span>
-                <div
-                  class="w-full rounded-t-sm transition-all duration-700"
-                  :class="i === revenueChart.length - 1 ? 'primary-gradient' : 'bg-primary/25 group-hover:bg-primary/50'"
-                  :style="`height:${(bar.val / maxRev) * 100}%`"
-                ></div>
+              <div v-for="(bar, i) in revenueChart" :key="i" class="flex-1 h-full flex flex-col items-center gap-1 group">
+                <span class="text-[10px] text-brand-light opacity-0 group-hover:opacity-100 transition-opacity">{{ fmtPrice(bar.val) }}</span>
+                <div class="flex-1 w-full flex items-end">
+                  <div
+                    class="w-full rounded-t-sm transition-all duration-700"
+                    :class="i === revenueChart.length - 1 ? 'primary-gradient' : 'bg-primary/25 group-hover:bg-primary/50'"
+                    :style="`height:${(bar.val / maxRev) * 100}%`"
+                  ></div>
+                </div>
                 <span class="text-[10px] text-brand-light">{{ bar.month }}</span>
               </div>
             </div>
@@ -642,14 +644,15 @@ const relTime = (iso) => {
   return `${Math.floor(h / 24)} day(s) ago`
 }
 
-const tabs = [
+// Badges reflect live data: listings awaiting review, and open reports.
+const tabs = computed(() => [
   { id: 'overview',  label: 'Overview',  icon: BarChart2  },
   { id: 'users',     label: 'Users',     icon: Users      },
-  { id: 'listings',  label: 'Listings',  icon: Building2, badge: 3 },
+  { id: 'listings',  label: 'Listings',  icon: Building2, badge: adminListings.value.filter((l) => l.adminStatus === 'Pending').length },
   { id: 'revenue',   label: 'Revenue',   icon: DollarSign },
   { id: 'analytics', label: 'Analytics', icon: Activity   },
-  { id: 'reports',   label: 'Reports',   icon: Flag,      badge: 2 },
-]
+  { id: 'reports',   label: 'Reports',   icon: Flag,      badge: flaggedContent.value.length },
+])
 
 // ── Overview (populated from /admin/overview) ──────────────────────────────
 const overviewStats = ref([
@@ -661,6 +664,7 @@ const overviewStats = ref([
 
 const revenueChart = ref([])
 const maxRev = computed(() => Math.max(1, ...revenueChart.value.map(d => d.val)))
+const chartTotal = computed(() => revenueChart.value.reduce((s, d) => s + d.val, 0))
 
 const recentActivity = ref([])
 
