@@ -10,11 +10,8 @@
           <!-- Navy gradient top half -->
           <div class="navy-gradient h-[55%] relative flex flex-col items-center justify-center px-8 text-center" style="border-radius: 0 0 40px 40px">
             <!-- Logo -->
-            <div class="absolute top-12 left-6 flex items-center gap-2">
-              <div class="w-8 h-8 primary-gradient rounded-md flex items-center justify-center">
-                <Home :size="18" class="text-white" />
-              </div>
-              <span class="text-white font-bold text-base">BRG Prime</span>
+            <div class="absolute top-12 left-6">
+              <BrandLogo class="h-8" />
             </div>
             <!-- Skip -->
             <button v-if="current < slides.length - 1" @click="finish" class="absolute top-12 right-6 text-white/70 text-sm font-medium hover:text-white">
@@ -58,6 +55,7 @@
 </template>
 
 <script setup>
+import BrandLogo from '@/components/BrandLogo.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Home, Building2, ShieldCheck } from 'lucide-vue-next'

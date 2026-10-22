@@ -6,14 +6,8 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between lg:grid lg:grid-cols-3">
 
         <!-- Logo (left) -->
-        <router-link to="/" class="flex items-center gap-2.5 flex-shrink-0">
-          <div class="w-9 h-9 primary-gradient rounded-xl flex items-center justify-center shadow-sm">
-            <Home :size="18" class="text-white" />
-          </div>
-          <div class="leading-tight">
-            <div class="font-extrabold text-secondary text-[15px] tracking-tight">BRG Prime</div>
-            <div class="hidden sm:block text-[10px] text-brand-light leading-none">Real Estate</div>
-          </div>
+        <router-link to="/" class="flex items-center flex-shrink-0">
+          <BrandLogo class="h-9" />
         </router-link>
 
         <!-- Category nav (true center) -->
@@ -522,12 +516,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-5 gap-8 mb-10">
           <!-- Brand col -->
           <div class="col-span-2">
-            <div class="flex items-center gap-2.5 mb-4">
-              <div class="w-9 h-9 primary-gradient rounded-xl flex items-center justify-center">
-                <Home :size="18" class="text-white" />
-              </div>
-              <span class="font-extrabold text-white text-lg">BRG Prime</span>
-            </div>
+            <BrandLogo class="h-10 mb-4" />
             <p class="text-white/40 text-sm leading-relaxed mb-6 max-w-xs">Nigeria's most trusted real estate platform for buying, selling, renting, and investing in property.</p>
             <div class="flex gap-2">
               <button
@@ -611,11 +600,12 @@
 </template>
 
 <script setup>
+import BrandLogo from '@/components/BrandLogo.vue'
 import { ref, computed, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/lib/api'
 import {
-  Home, Search, MapPin, ChevronRight, ChevronDown, BadgeCheck,
+  Search, MapPin, ChevronRight, ChevronDown, BadgeCheck,
   BedDouble, Bath, Lock, X, Plus, Mail, Phone, Star,
   TrendingUp, ShieldCheck, Zap,
 } from 'lucide-vue-next'

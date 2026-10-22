@@ -7,9 +7,7 @@
 
         <!-- Logo + Heading -->
         <div class="text-center mb-8">
-          <div class="w-14 h-14 primary-gradient rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Home :size="26" class="text-white" />
-          </div>
+          <BrandLogo class="h-14 mx-auto mb-5" />
           <h1 class="text-2xl font-extrabold text-secondary">Welcome back</h1>
           <p class="text-brand-muted text-sm mt-1">Sign in to your BRG Prime account</p>
         </div>
@@ -80,10 +78,11 @@
 </template>
 
 <script setup>
+import BrandLogo from '@/components/BrandLogo.vue'
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { Home, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-vue-next'
+import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-vue-next'
 
 const router    = useRouter()
 const userStore = useUserStore()

@@ -4,14 +4,8 @@
     :class="open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
   >
     <!-- Logo -->
-    <div class="flex items-center gap-3 px-6 py-5 border-b border-white/10">
-      <div class="w-9 h-9 primary-gradient rounded-md flex items-center justify-center shadow-md">
-        <Home :size="18" class="text-white" />
-      </div>
-      <div>
-        <div class="text-white font-extrabold text-base leading-tight tracking-tight">BRG Prime</div>
-        <div class="text-white/40 text-[11px] tracking-wide">Buy · Sell · Rent · Lease</div>
-      </div>
+    <div class="px-6 py-5 border-b border-white/10">
+      <BrandLogo class="h-9" />
     </div>
 
     <!-- Nav Items -->
@@ -50,7 +44,7 @@
         </div>
         <div class="flex-1 min-w-0">
           <div class="text-white text-xs font-bold">{{ subStore.plan.name }}</div>
-          <div class="text-white/50 text-[10px]">{{ myCount }}/{{ subStore.listingLimit }} listings used</div>
+          <div class="text-white/50 text-[10px]">{{ myCount }}/{{ subStore.listingLimitLabel }} listings used</div>
         </div>
         <ChevronRight :size="13" class="text-white/30" />
       </router-link>
@@ -84,6 +78,7 @@
 </template>
 
 <script setup>
+import BrandLogo from '@/components/BrandLogo.vue'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
