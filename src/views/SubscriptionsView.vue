@@ -42,11 +42,13 @@
               <div class="text-white/50 text-[11px] mt-1">Listings used</div>
             </div>
             <div class="bg-white/10 rounded-lg p-3">
-              <div class="text-white text-lg font-extrabold leading-none">{{ subStore.premiumRemaining }}<span class="text-white/40 text-sm font-semibold">/{{ subStore.premiumLimit }}</span></div>
+              <div v-if="subStore.unlimited" class="text-white text-lg font-extrabold leading-none">Unlimited</div>
+              <div v-else class="text-white text-lg font-extrabold leading-none">{{ subStore.premiumRemaining }}<span class="text-white/40 text-sm font-semibold">/{{ subStore.premiumLimit }}</span></div>
               <div class="text-white/50 text-[11px] mt-1">Premium left</div>
             </div>
             <div class="bg-white/10 rounded-lg p-3">
-              <div class="text-white text-lg font-extrabold leading-none">{{ subStore.boostsRemaining }}<span class="text-white/40 text-sm font-semibold">/{{ subStore.boostLimit }}</span></div>
+              <div v-if="subStore.unlimited" class="text-white text-lg font-extrabold leading-none">Unlimited</div>
+              <div v-else class="text-white text-lg font-extrabold leading-none">{{ subStore.boostsRemaining }}<span class="text-white/40 text-sm font-semibold">/{{ subStore.boostLimit }}</span></div>
               <div class="text-white/50 text-[11px] mt-1">Boosts left</div>
             </div>
           </div>

@@ -43,16 +43,16 @@ export const useSubscriptionStore = defineStore('subscription', {
 
   getters: {
     plan:             (s) => getPlan(s.planId),
-    // Admins have no listing cap, whatever plan they're on.
-    unlimitedListings: () => useUserStore().isAdmin,
-    listingLimit() { return this.unlimitedListings ? Infinity : getPlan(this.planId).listings },
-    listingLimitLabel() { return this.unlimitedListings ? 'Unlimited' : this.listingLimit },
-    premiumLimit:     (s) => getPlan(s.planId).premium,
-    boostLimit:       (s) => getPlan(s.planId).boosts,
+    // Admins have no listing, premium or boost caps, whatever plan they're on.
+    unlimited:         () => useUserStore().isAdmin,
+    listingLimit() { return this.unlimited ? Infinity : getPlan(this.planId).listings },
+    listingLimitLabel() { return this.unlimited ? 'Unlimited' : this.listingLimit },
+    premiumLimit() { return this.unlimited ? Infinity : getPlan(this.planId).premium },
+    boostLimit() { return this.unlimited ? Infinity : getPlan(this.planId).boosts },
     hasLeads:         (s) => getPlan(s.planId).leads,
     isPaid:           (s) => s.planId !== 'free',
-    premiumRemaining: (s) => Math.max(0, getPlan(s.planId).premium - s.premiumUsed),
-    boostsRemaining:  (s) => Math.max(0, getPlan(s.planId).boosts - s.boostsUsed),
+    premiumRemaining() { return Math.max(0, this.premiumLimit - this.premiumUsed) },
+    boostsRemaining() { return Math.max(0, this.boostLimit - this.boostsUsed) },
   },
 
   actions: {

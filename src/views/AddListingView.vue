@@ -276,8 +276,8 @@
           </div>
         </div>
 
-        <!-- G: Visibility (paid plans only) -->
-        <div v-if="subStore.isPaid" class="card p-5">
+        <!-- G: Visibility (paid plans and admins only) -->
+        <div v-if="subStore.isPaid || subStore.unlimited" class="card p-5">
           <h3 class="font-bold text-secondary mb-1">Boost Visibility</h3>
           <p class="text-xs text-brand-muted mb-3">Use your plan allowance to get this listing seen by more people</p>
           <div class="space-y-3">
@@ -293,7 +293,7 @@
               </div>
               <div class="flex-1 min-w-0">
                 <div class="text-sm font-semibold text-secondary">Premium Listing</div>
-                <div class="text-xs text-brand-muted">Appears at the top of search results · {{ subStore.premiumRemaining }} left</div>
+                <div class="text-xs text-brand-muted">Appears at the top of search results · {{ subStore.unlimited ? 'Unlimited' : `${subStore.premiumRemaining} left` }}</div>
               </div>
               <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0"
                 :class="form.premium ? 'border-warning bg-warning' : 'border-brand-border'">
@@ -313,7 +313,7 @@
               </div>
               <div class="flex-1 min-w-0">
                 <div class="text-sm font-semibold text-secondary">Listing Boost</div>
-                <div class="text-xs text-brand-muted">Extra visibility across the platform · {{ subStore.boostsRemaining }} left</div>
+                <div class="text-xs text-brand-muted">Extra visibility across the platform · {{ subStore.unlimited ? 'Unlimited' : `${subStore.boostsRemaining} left` }}</div>
               </div>
               <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0"
                 :class="form.boost ? 'border-success bg-success' : 'border-brand-border'">
