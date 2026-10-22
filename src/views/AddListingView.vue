@@ -14,7 +14,7 @@
             :class="remainingListings > 0 ? 'border-success/30 bg-success/5 text-success' : 'border-danger/30 bg-danger/5 text-danger'"
           >
             <Layers :size="13" />
-            {{ myCount }}/{{ subStore.listingLimit }} listings
+            {{ myCount }}/{{ subStore.listingLimitLabel }} listings
           </router-link>
           <button
             @click="saveDraft"

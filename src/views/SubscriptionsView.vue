@@ -38,7 +38,7 @@
           </div>
           <div class="grid grid-cols-3 gap-3">
             <div class="bg-white/10 rounded-lg p-3">
-              <div class="text-white text-lg font-extrabold leading-none">{{ myCount }}<span class="text-white/40 text-sm font-semibold">/{{ subStore.listingLimit }}</span></div>
+              <div class="text-white text-lg font-extrabold leading-none">{{ myCount }}<span class="text-white/40 text-sm font-semibold">/{{ subStore.listingLimitLabel }}</span></div>
               <div class="text-white/50 text-[11px] mt-1">Listings used</div>
             </div>
             <div class="bg-white/10 rounded-lg p-3">

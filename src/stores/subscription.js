@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import api from '@/lib/api'
+import { useUserStore } from '@/stores/user'
 
 // ── Plan catalogue ──────────────────────────────────────────────────────────
 // Kept in sync with the backend (src/config/plans.js). Exported for the UI.
@@ -42,7 +43,10 @@ export const useSubscriptionStore = defineStore('subscription', {
 
   getters: {
     plan:             (s) => getPlan(s.planId),
-    listingLimit:     (s) => getPlan(s.planId).listings,
+    // Admins have no listing cap, whatever plan they're on.
+    unlimitedListings: () => useUserStore().isAdmin,
+    listingLimit() { return this.unlimitedListings ? Infinity : getPlan(this.planId).listings },
+    listingLimitLabel() { return this.unlimitedListings ? 'Unlimited' : this.listingLimit },
     premiumLimit:     (s) => getPlan(s.planId).premium,
     boostLimit:       (s) => getPlan(s.planId).boosts,
     hasLeads:         (s) => getPlan(s.planId).leads,

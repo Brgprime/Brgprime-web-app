@@ -56,7 +56,7 @@
           <div class="font-bold text-secondary">{{ subStore.plan.name }}</div>
           <div class="text-xs text-brand-muted mt-0.5">
             <span class="font-semibold text-secondary text-base">{{ myListingsCount }}</span>
-            of {{ subStore.listingLimit }} listings used
+            of {{ subStore.listingLimitLabel }} listings used
           </div>
         </div>
         <div class="flex items-center gap-2 flex-shrink-0">
