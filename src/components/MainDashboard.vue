@@ -31,6 +31,32 @@
       </div>
     </div>
 
+    <!-- BuildQ AI — a separate product served at /boq, not a route in this app.
+         Deliberately a plain <a>: <router-link> would try to resolve /boq
+         inside this SPA and hit the not-found view instead of leaving it.
+         A signed-in user is carried straight through; anyone else lands on
+         BuildQ's own sign-in. -->
+    <a
+      href="/boq"
+      class="card p-4 flex items-center gap-4 hover:shadow-lg transition-shadow group"
+    >
+      <div class="flex-shrink-0 w-12 h-12 rounded-xl primary-gradient flex items-center justify-center">
+        <Calculator :size="22" class="text-white" />
+      </div>
+      <div class="min-w-0 flex-1">
+        <h3 class="font-extrabold text-secondary text-sm leading-tight">
+          BuildQ AI — Quantity Surveying
+        </h3>
+        <p class="text-xs text-brand-muted mt-1 leading-snug">
+          Upload construction drawings and get a priced bill of quantities. Free for 14 days.
+        </p>
+      </div>
+      <ArrowRight
+        :size="18"
+        class="flex-shrink-0 text-primary transition-transform group-hover:translate-x-0.5"
+      />
+    </a>
+
     <!-- Popular Locations -->
     <div>
       <div class="flex items-center justify-between mb-3">
@@ -74,7 +100,7 @@ import api from '@/lib/api'
 import { useUserStore } from '@/stores/user'
 import { usePropertyStore } from '@/stores/property'
 import PropertyCard from '@/components/PropertyCard.vue'
-import { ChevronRight, Plus } from 'lucide-vue-next'
+import { ChevronRight, Plus, Calculator, ArrowRight } from 'lucide-vue-next'
 
 const userStore    = useUserStore()
 const propStore    = usePropertyStore()
