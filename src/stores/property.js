@@ -13,7 +13,7 @@ const DEFAULT_FILTERS = {
 export const usePropertyStore = defineStore('property', {
   state: () => ({
     listings: [],       // public browse set (server-provided)
-    myItems: [],        // the current user's own listings (owner-scoped)
+    myItems: [],        // own listings (admins: every admin-posted listing)
     loading: false,
     loaded: false,
     // Filter UI state (client-side filtering over `listings`, unchanged behaviour)
@@ -85,6 +85,22 @@ export const usePropertyStore = defineStore('property', {
       this.listings.unshift(data)
       this.myItems.unshift(data)
       return data
+    },
+
+    // Edit a listing (owner, or any admin for admin-posted listings).
+    async updateListing(id, payload) {
+      const { data } = await api.patch(`/properties/${id}`, payload)
+      for (const list of [this.listings, this.myItems]) {
+        const idx = list.findIndex((p) => p.id === id)
+        if (idx >= 0) list[idx] = { ...list[idx], ...data }
+      }
+      return data
+    },
+
+    async deleteListing(id) {
+      await api.del(`/properties/${id}`)
+      this.listings = this.listings.filter((p) => p.id !== id)
+      this.myItems = this.myItems.filter((p) => p.id !== id)
     },
 
     resetFilters() {

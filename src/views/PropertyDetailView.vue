@@ -122,6 +122,9 @@
           <div class="text-primary text-xl font-extrabold">{{ formatPrice(property.price) }}<span class="text-brand-light text-sm font-normal">{{ priceSuffix }}</span></div>
           <div class="text-brand-muted text-xs truncate">{{ property.address }}</div>
         </div>
+        <router-link v-if="canEdit" :to="`/add-listing?edit=${property.id}`" class="btn-secondary px-4 py-3 text-sm flex-shrink-0 gap-2">
+          <Pencil :size="15" /> Edit
+        </router-link>
         <router-link :to="`/book-viewing?id=${property.id}`" class="btn-primary px-4 sm:px-8 py-3 text-sm flex-shrink-0">Book Viewing</router-link>
       </div>
     </div>
@@ -140,16 +143,22 @@ import { useRoute } from 'vue-router'
 import AppLayout from '@/components/AppLayout.vue'
 import { usePropertyStore } from '@/stores/property'
 import { useFavoritesStore } from '@/stores/favorites'
-import { ArrowLeft, Heart, Share2, MapPin, Star, BedDouble, Bath, Maximize2, MessageSquare, Phone, BadgeCheck } from 'lucide-vue-next'
+import { useUserStore } from '@/stores/user'
+import { ArrowLeft, Heart, Share2, MapPin, Star, BedDouble, Bath, Maximize2, MessageSquare, Phone, BadgeCheck, Pencil } from 'lucide-vue-next'
 import UserAvatar from '@/components/UserAvatar.vue'
 
 const route = useRoute()
 const propStore = usePropertyStore()
 const favStore = useFavoritesStore()
+const userStore = useUserStore()
 
 const fetched = ref(null)
 const property = computed(() => fetched.value || propStore.getById(route.params.id))
 const activeImg = ref(0)
+// Admins can manage any listing; everyone else only their own.
+const canEdit = computed(() =>
+  !!property.value && (userStore.isAdmin || (!!userStore.id && property.value.ownerId === userStore.id))
+)
 
 onMounted(async () => {
   try {

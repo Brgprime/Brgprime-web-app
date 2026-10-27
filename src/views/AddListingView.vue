@@ -3,10 +3,10 @@
     <div class="page-pad pb-10">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h2 class="text-xl font-extrabold text-secondary">Post a Listing</h2>
-          <p class="text-xs text-brand-muted mt-0.5">Fill in the details to publish your property</p>
+          <h2 class="text-xl font-extrabold text-secondary">{{ isEdit ? 'Edit Listing' : 'Post a Listing' }}</h2>
+          <p class="text-xs text-brand-muted mt-0.5">{{ isEdit ? 'Update the details of this property' : 'Fill in the details to publish your property' }}</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div v-if="!isEdit" class="flex items-center gap-2">
           <!-- Plan quota badge -->
           <router-link
             to="/subscriptions"
@@ -25,7 +25,11 @@
         </div>
       </div>
 
-      <form @submit.prevent="publish" class="space-y-5">
+      <div v-if="loadingExisting" class="flex justify-center py-20">
+        <Loader2 :size="28" class="text-primary animate-spin" />
+      </div>
+
+      <form v-else @submit.prevent="publish" class="space-y-5">
 
         <!-- A: Listing Type -->
         <div class="card p-5">
@@ -277,7 +281,7 @@
         </div>
 
         <!-- G: Visibility (paid plans and admins only) -->
-        <div v-if="subStore.isPaid || subStore.unlimited" class="card p-5">
+        <div v-if="!isEdit && (subStore.isPaid || subStore.unlimited)" class="card p-5">
           <h3 class="font-bold text-secondary mb-1">Boost Visibility</h3>
           <p class="text-xs text-brand-muted mb-3">Use your plan allowance to get this listing seen by more people</p>
           <div class="space-y-3">
@@ -326,10 +330,10 @@
         <!-- Publish -->
         <button type="submit" class="btn-primary w-full py-4 text-base font-bold" :disabled="loading">
           <span v-if="!loading" class="flex items-center justify-center gap-2">
-            <CheckCircle :size="18" /> Publish Listing
+            <CheckCircle :size="18" /> {{ isEdit ? 'Save Changes' : 'Publish Listing' }}
           </span>
           <span v-else class="flex items-center justify-center gap-2">
-            <Loader2 :size="18" class="animate-spin" /> Publishing...
+            <Loader2 :size="18" class="animate-spin" /> {{ isEdit ? 'Saving...' : 'Publishing...' }}
           </span>
         </button>
       </form>
@@ -360,8 +364,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import api from '@/lib/api'
 import AppLayout from '@/components/AppLayout.vue'
 import { usePropertyStore } from '@/stores/property'
@@ -370,17 +374,21 @@ import { useToastStore } from '@/stores/toast'
 import { X, Plus, Loader2, CheckCircle, Layers, Check, Rocket, ArrowUpNarrowWide, Phone, Mail, MessageCircle } from 'lucide-vue-next'
 
 const router       = useRouter()
+const route        = useRoute()
 const propStore    = usePropertyStore()
 const subStore     = useSubscriptionStore()
 const toast        = useToastStore()
 const loading      = ref(false)
 const uploadingImages = ref(false)
 const showLimitPrompt = ref(false)
+const editId          = computed(() => route.query.edit || null)
+const isEdit          = computed(() => !!editId.value)
+const loadingExisting = ref(false)
 
 const myCount           = computed(() => propStore.myListings.length)
 const remainingListings = computed(() => Math.max(0, subStore.listingLimit - myCount.value))
 
-const form = reactive({
+const blankForm = () => ({
   listingType: 'rent',
   title: '', propertyType: 'apartment', address: '',
   price: null, size: null, bedrooms: null, bathrooms: null, yearBuilt: null,
@@ -389,6 +397,39 @@ const form = reactive({
   landSize: '', zoning: '', minStay: null, maxGuests: null,
   contact: 'call', premium: false, boost: false,
 })
+const form = reactive(blankForm())
+
+// Edit mode: prefill the form from the existing listing.
+// Watched (not onMounted) because the view is reused when only the query changes.
+watch(editId, async () => {
+  Object.assign(form, blankForm())
+  if (!isEdit.value) return
+  loadingExisting.value = true
+  try {
+    const p = await propStore.fetchById(editId.value)
+    Object.assign(form, {
+      listingType: p.listingType,
+      title: p.title,
+      propertyType: p.propertyType,
+      address: p.address,
+      price: p.price,
+      size: p.size || null,
+      bedrooms: p.bedrooms,
+      bathrooms: p.bathrooms,
+      yearBuilt: p.yearBuilt,
+      furnishingStatus: p.furnishingStatus,
+      propertyCondition: p.propertyCondition,
+      description: p.description || '',
+      amenities: [...(p.amenities || [])],
+      images: [...(p.images || [])],
+    })
+  } catch (e) {
+    toast.error(e.message || 'Could not load this listing.')
+    router.replace('/my-listings')
+  } finally {
+    loadingExisting.value = false
+  }
+}, { immediate: true })
 
 const togglePremium = () => {
   if (!form.premium && subStore.premiumRemaining <= 0) return
@@ -507,26 +548,43 @@ const publish = async () => {
     return
   }
 
+  const details = {
+    title: form.title,
+    address: form.address,
+    price: Number(form.price),
+    listingType: form.listingType,
+    propertyType: form.propertyType,
+    description: form.description,
+    bedrooms: Number(form.bedrooms) || 0,
+    bathrooms: Number(form.bathrooms) || 0,
+    size: Number(form.size) || 0,
+    yearBuilt: form.yearBuilt ? Number(form.yearBuilt) : null,
+    furnishingStatus: form.furnishingStatus,
+    propertyCondition: form.propertyCondition,
+    amenities: form.amenities,
+    images: form.images,
+  }
+
   loading.value = true
+  if (isEdit.value) {
+    try {
+      await propStore.updateListing(editId.value, details)
+      toast.success('Listing updated.')
+      router.push('/my-listings')
+    } catch (e) {
+      toast.error(e.message || 'Could not update listing.')
+    } finally {
+      loading.value = false
+    }
+    return
+  }
+
   try {
     // The backend enforces the plan quota and consumes premium/boost allowances.
     // NOTE: images are local previews for now; wiring the R2 upload endpoint is
     // the remaining piece (needs R2 keys configured).
     await propStore.createListing({
-      title: form.title,
-      address: form.address,
-      price: Number(form.price),
-      listingType: form.listingType,
-      propertyType: form.propertyType,
-      description: form.description,
-      bedrooms: Number(form.bedrooms) || 0,
-      bathrooms: Number(form.bathrooms) || 0,
-      size: Number(form.size) || 0,
-      yearBuilt: form.yearBuilt ? Number(form.yearBuilt) : null,
-      furnishingStatus: form.furnishingStatus,
-      propertyCondition: form.propertyCondition,
-      amenities: form.amenities,
-      images: form.images,
+      ...details,
       isPremium: form.premium,
       isBoosted: form.boost,
     })

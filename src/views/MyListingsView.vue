@@ -4,7 +4,9 @@
       <div class="flex items-center justify-between mb-6">
         <div>
           <h2 class="text-xl font-extrabold text-secondary">My Listings</h2>
-          <p class="text-xs text-brand-muted mt-0.5">{{ listings.length }} propert{{ listings.length === 1 ? 'y' : 'ies' }} posted</p>
+          <p class="text-xs text-brand-muted mt-0.5">
+            {{ listings.length }} propert{{ listings.length === 1 ? 'y' : 'ies' }} posted<template v-if="userStore.isAdmin"> · shared with all admins</template>
+          </p>
         </div>
         <router-link to="/add-listing" class="btn-primary py-2.5 px-4 text-sm gap-2">
           <Plus :size="15" /> Post New
@@ -51,6 +53,9 @@
                   </span>
                   <h3 class="font-bold text-secondary text-sm leading-tight truncate mt-1">{{ p.title }}</h3>
                   <p class="text-brand-muted text-xs mt-0.5 truncate">{{ p.address || p.location }}</p>
+                  <p v-if="userStore.isAdmin && p.ownerId && p.ownerId !== userStore.id" class="text-[11px] text-brand-light mt-0.5 truncate">
+                    Listed by {{ p.agentName }}
+                  </p>
                 </div>
                 <div class="text-right flex-shrink-0">
                   <div class="font-extrabold text-secondary text-sm">₦{{ formatPrice(p.price) }}</div>
@@ -66,7 +71,11 @@
                 <div class="flex items-center gap-2">
                   <router-link :to="`/property/${p.id}`" class="text-primary text-xs font-semibold hover:underline">View</router-link>
                   <span class="text-brand-border">·</span>
-                  <router-link to="/add-listing" class="text-brand-muted text-xs hover:text-secondary">Edit</router-link>
+                  <router-link :to="`/add-listing?edit=${p.id}`" class="text-brand-muted text-xs hover:text-secondary">Edit</router-link>
+                  <span class="text-brand-border">·</span>
+                  <button @click="remove(p)" :disabled="deletingId === p.id" class="text-danger text-xs hover:underline disabled:opacity-50">
+                    {{ deletingId === p.id ? 'Deleting...' : 'Delete' }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -91,9 +100,14 @@
 import { ref, computed } from 'vue'
 import AppLayout from '@/components/AppLayout.vue'
 import { usePropertyStore } from '@/stores/property'
+import { useUserStore } from '@/stores/user'
+import { useToastStore } from '@/stores/toast'
 import { Plus, Eye, Heart, ClipboardList, ArrowUpNarrowWide, Rocket } from 'lucide-vue-next'
 
 const propStore  = usePropertyStore()
+const userStore  = useUserStore()
+const toast      = useToastStore()
+const deletingId = ref(null)
 const activeTab  = ref('All')
 const tabs       = ['All', 'Active', 'Pending', 'Sold']
 
@@ -101,6 +115,19 @@ const listings   = computed(() => propStore.myListings)
 const filtered   = computed(() =>
   activeTab.value === 'All' ? listings.value : listings.value.filter(p => (p.status || 'Active') === activeTab.value)
 )
+
+const remove = async (p) => {
+  if (!confirm(`Delete "${p.title}"? This cannot be undone.`)) return
+  deletingId.value = p.id
+  try {
+    await propStore.deleteListing(p.id)
+    toast.success('Listing deleted.')
+  } catch (e) {
+    toast.error(e.message || 'Could not delete listing.')
+  } finally {
+    deletingId.value = null
+  }
+}
 
 const formatPrice = (n) => (n || 0).toLocaleString()
 const statusClass = (s) => ({
